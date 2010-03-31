@@ -64,6 +64,7 @@ elseif(UNIX)
     set(DIRAC_LIB Dirac)
     set(MEX_EXT "mexglx")
     add_library(libDirac STATIC IMPORTED)
+    add_library(libsndfile SHARED IMPORTED)
 else()
 
     message("Unsupported platform, exiting.")
@@ -81,4 +82,4 @@ set_target_properties(dirac PROPERTIES
     PREFIX ""
     SUFFIX ".${MEX_EXT}")
 
-target_link_libraries(dirac ${DIRAC_LIB} ${VECLIB_LIB})
+target_link_libraries(dirac sndfile ${DIRAC_LIB} ${VECLIB_LIB})
