@@ -15,7 +15,8 @@ message("${MATLAB_INCLUDE_DIR}")
 
 # NOTE: this doesn't really do what I want, which is bail on configure when a
 # header isn't found instead of at compile time.
-# check_include_file(sndfile.h SNDFILE_H)
+#
+# check_include_file(sndfile.h SNDFILE_H) 
 # if(!SNDFILE_H)
     # message("sndfile.h not found!")
 # endif()
@@ -23,18 +24,23 @@ message("${MATLAB_INCLUDE_DIR}")
 # TODO: why must "lib" be prepended to library names?
 if(WIN32)
 
+    # TODO: test under Windows!
     # FIXME: dlls are not found at runtime because they have to be in the same
     # folder as the executable, but they are not copied there
     message("Configuring for Windows")
+
     set(LIB_DIR Win)
     set(DIRAC_LIB DiracLE)
     add_library(libDiracLE SHARED IMPORTED)
-    set(MEX_EXT "mexglx")
+
+    # NOTE: for now we only care about 32bit Windows
+    set(MEX_EXT "mexw32")
 
 elseif(APPLE)
 
     # TODO: test under OS X!
     message("Configuring for OS X")
+
     set(LIB_DIR Mac)
     set(DIRAC_LIB DiracLE)
     add_library(libDiracLE STATIC IMPORTED)
@@ -50,6 +56,9 @@ elseif(APPLE)
         add_library(${VECLIB_LIB} IMPORTED)
     endif()
 
+    # yeah, we only support intel macs
+    set(MEX_EXT "mexmaci")
+
 elseif(UNIX)
 
     message("Configuring for Unix (Linux)")
@@ -62,15 +71,18 @@ elseif(UNIX)
 
     set(LIB_DIR Linux)
     set(DIRAC_LIB Dirac)
-    set(MEX_EXT "mexglx")
     add_library(libDirac STATIC IMPORTED)
-    add_library(libsndfile SHARED IMPORTED)
+
+    set(MEX_EXT "mexglx")
+
 else()
 
     message("Unsupported platform, exiting.")
     return()
 
 endif()
+
+add_library(libsndfile SHARED IMPORTED)
 
 # NOTE: link directories only apply to targets defined afterwards
 link_directories(${MDIRAC_SOURCE_DIR}/${LIB_DIR})
