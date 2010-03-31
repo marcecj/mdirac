@@ -111,6 +111,9 @@ set_target_properties(dirac PROPERTIES
     PREFIX ""
     SUFFIX ".${MEX_EXT}")
 
-# FIXME: adding ${MATLAB_MEX_LIBRARY} under Linux broke compilation, but under
-# Windows it's necessary for linking to succeed.
-target_link_libraries(dirac ${SNDFILE_LIB} ${MATLAB_MEX_LIBRARY} ${DIRAC_LIB} ${VECLIB_LIB})
+if(WIN32)
+    target_link_libraries(dirac ${SNDFILE_LIB} ${MATLAB_MEX_LIBRARY} ${DIRAC_LIB} ${VECLIB_LIB})
+else()
+    target_link_libraries(dirac ${SNDFILE_LIB} ${DIRAC_LIB} ${VECLIB_LIB})
+endif()
+
