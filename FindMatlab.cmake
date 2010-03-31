@@ -13,10 +13,16 @@ IF(WIN32)
   IF(${CMAKE_GENERATOR} MATCHES "Visual Studio 6")
     SET(MATLAB_ROOT "[HKEY_LOCAL_MACHINE\\SOFTWARE\\MathWorks\\MATLAB\\7.0;MATLABROOT]/extern/lib/win32/microsoft/msvc60")
   ELSE(${CMAKE_GENERATOR} MATCHES "Visual Studio 6")
-    IF(${CMAKE_GENERATOR} MATCHES "Visual Studio 7")
+    IF(${CMAKE_GENERATOR} MATCHES "Visual Studio 8")
+      message("VS8")
+      SET(MATLAB_ROOT "[HKEY_LOCAL_MACHINE\\SOFTWARE\\MathWorks\\MATLAB\\7.6;MATLABROOT]/extern/lib/win32/microsoft")
+      #SET(MATLAB_ROOT "[HKEY_LOCAL_MACHINE\\SOFTWARE\\MathWorks\\MATLAB\\7.6;MATLABROOT]/extern/lib/win32/microsoft/msvc80")
+      #SET(MATLAB_ROOT "C:/Programme/MATLAB/R2008a/extern/lib/win32/microsoft")
+      #SET(MATLAB_ROOT "C:\Programme\MATLAB\R2008a\extern\lib\win32\microsoft")
+    ELSEIF(${CMAKE_GENERATOR} MATCHES "Visual Studio 7")
       # Assume people are generally using 7.1,
       # if using 7.0 need to link to: ../extern/lib/win32/microsoft/msvc70
-      SET(MATLAB_ROOT "[HKEY_LOCAL_MACHINE\\SOFTWARE\\MathWorks\\MATLAB\\7.0;MATLABROOT]/extern/lib/win32/microsoft/msvc71")
+      SET(MATLAB_ROOT "[HKEY_LOCAL_MACHINE\\SOFTWARE\\MathWorks\\MATLAB\\7.6;MATLABROOT]/extern/lib/win32/microsoft")
     ELSE(${CMAKE_GENERATOR} MATCHES "Visual Studio 7")
       IF(${CMAKE_GENERATOR} MATCHES "Borland")
         # Same here, there are also: bcc50 and bcc51 directories
@@ -26,7 +32,7 @@ IF(WIN32)
           MESSAGE(FATAL_ERROR "Generator not compatible: ${CMAKE_GENERATOR}")
         ENDIF(MATLAB_FIND_REQUIRED)
       ENDIF(${CMAKE_GENERATOR} MATCHES "Borland")
-    ENDIF(${CMAKE_GENERATOR} MATCHES "Visual Studio 7")
+    ENDIF(${CMAKE_GENERATOR} MATCHES "Visual Studio 8")
   ENDIF(${CMAKE_GENERATOR} MATCHES "Visual Studio 6")
   FIND_LIBRARY(MATLAB_MEX_LIBRARY
     libmex
@@ -43,7 +49,7 @@ IF(WIN32)
 
   FIND_PATH(MATLAB_INCLUDE_DIR
     "mex.h"
-    "[HKEY_LOCAL_MACHINE\\SOFTWARE\\MathWorks\\MATLAB\\7.0;MATLABROOT]/extern/include"
+    "[HKEY_LOCAL_MACHINE\\SOFTWARE\\MathWorks\\MATLAB\\7.6;MATLABROOT]/extern/include"
     )
 ELSE( WIN32 )
   IF(CMAKE_SIZEOF_VOID_P EQUAL 4)
@@ -88,6 +94,8 @@ ELSE( WIN32 )
     )
 
 ENDIF(WIN32)
+
+message("${MATLAB_ROOT}")
 
 # This is common to UNIX and Win32:
 SET(MATLAB_LIBRARIES
