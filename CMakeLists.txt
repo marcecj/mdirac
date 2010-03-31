@@ -41,7 +41,7 @@ if(WIN32)
     find_path(SNDFILE_H_DIR sndfile.h ${SNDFILE_DIRS})
     find_path(SNDFILE_LIB_DIR sndfile ${SNDFILE_DIRS})
 
-    # NOTE: for now we only care about 32bit Windows
+    find_file(MEX_VERSION_C mexversion.rc ${MATLAB_INCLUDE_DIR})
     set(MEX_EXT "mexw32")
 
 elseif(APPLE)
@@ -67,7 +67,7 @@ elseif(APPLE)
         add_library(${VECLIB_LIB} IMPORTED)
     endif()
 
-    # yeah, we only support intel macs
+    set(MEX_VERSION_C "${MATLAB_INCLUDE_DIR}/../src/mexversion.c")
     set(MEX_EXT "mexmaci")
 
 elseif(UNIX)
@@ -88,6 +88,8 @@ elseif(UNIX)
     set(SNDFILE_LIB sndfile)
     add_library(libsndfile SHARED IMPORTED)
 
+    # abuse MATLAB_INCLUDE_DIR to get to the src directory
+    set(MEX_VERSION_C "${MATLAB_INCLUDE_DIR}/../src/mexversion.c")
     set(MEX_EXT "mexglx")
 
 else()
@@ -101,19 +103,15 @@ endif()
 include_directories(${MATLAB_INCLUDE_DIR} ${SNDFILE_H_DIR})
 link_directories(${MDIRAC_SOURCE_DIR}/${LIB_DIR} ${SNDFILE_LIB_DIR})
 
-# TODO: Do I need to make dirac.def conditional for non-Windows platforms or
-# does CMake do the right thing by itself?
-add_library(dirac MODULE dirac.c Dirac.h dirac.def)
+add_library(TimeStretchDirac MODULE
+    dirac.c Dirac.h dirac.def
+    ${MEX_VERSION_C})
 
-set_target_properties(dirac PROPERTIES
+set_target_properties(TimeStretchDirac PROPERTIES
     COMPILE_FLAGS ""
     LINK_FLAGS ""
+    DEFINE_SYMBOL "MATLAB_MEX_FILE"
     PREFIX ""
     SUFFIX ".${MEX_EXT}")
 
-if(WIN32)
-    target_link_libraries(dirac ${SNDFILE_LIB} ${MATLAB_MEX_LIBRARY} ${DIRAC_LIB} ${VECLIB_LIB})
-else()
-    target_link_libraries(dirac ${SNDFILE_LIB} ${DIRAC_LIB} ${VECLIB_LIB})
-endif()
-
+target_link_libraries(TimeStretchDirac ${SNDFILE_LIB} ${MATLAB_MEX_LIBRARY} ${DIRAC_LIB} ${VECLIB_LIB})
