@@ -6,7 +6,7 @@ project(MDIRAC C)
 
 set(CMAKE_MODULE_PATH "${MDIRAC_SOURCE_DIR}")
 
-# find matlab related stuff (thank god somebody already wrote this stuff)
+# find matlab related stuff (thank god somebody already wrote this)
 # NOTE: I had to modify FindMatlab.cmake, it's nowhere near all-encompassing.
 # It'll probably have to be adapted further. I hope I'll find the time to send a
 # patch upstream (though maybe CMake 2.8 has an updated version).
@@ -33,7 +33,7 @@ if(WIN32)
     set(SNDFILE_LIB libsndfile-1)
     add_library(libsndfile SHARED IMPORTED)
 
-    # Deal with stupid non-standard library/header locations under Windows .
+    # Deal with stupid non-standard library/header locations under Windows.
     # Maybe more possibilities need to be added here.
     # (alternative: copy relevant files to project directory)
     set(SNDFILE_DIRS
@@ -41,7 +41,7 @@ if(WIN32)
     find_path(SNDFILE_H_DIR sndfile.h ${SNDFILE_DIRS})
     find_path(SNDFILE_LIB_DIR sndfile ${SNDFILE_DIRS})
 
-    find_file(MEX_VERSION_C mexversion.rc ${MATLAB_INCLUDE_DIR})
+    set(MEX_VERSION_C "${MATLAB_INCLUDE_DIR}/mexversion.rc")
     set(MEX_EXT "mexw32")
 
 elseif(APPLE)
