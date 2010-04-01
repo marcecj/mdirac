@@ -4,6 +4,7 @@ cmake_minimum_required(VERSION 2.6)
 # NOTE: various variables start with the project name, such as *_SOURCE_DIR
 project(MDIRAC C)
 
+# set(CMAKE_C_COMPILER "x86_64-pc-linux-gnu-gcc-4.1.2")
 set(CMAKE_MODULE_PATH "${MDIRAC_SOURCE_DIR}")
 
 # find matlab related stuff (thank god somebody already wrote this)
@@ -49,6 +50,11 @@ elseif(APPLE)
     # TODO: test under OS X!
     message("Configuring for OS X")
 
+    # add exceptions option, see "UNIX" section for explanation
+    set(CMAKE_C_FLAGS
+        "${CMAKE_C_FLAGS} -fexceptions")
+    message("Compiler flags:\t${CMAKE_C_FLAGS}")
+
     set(LIB_DIR Mac)
 
     set(DIRAC_LIB DiracLE)
@@ -72,14 +78,13 @@ elseif(APPLE)
 
 elseif(UNIX)
 
-    # TODO: after changes to make this work under Windows, test on Linux again.
     message("Configuring for Unix (Linux)")
 
-    # enforce 32 bit compilation
-    set(CMAKE_C_FLAGS "-m32")
-    set(CMAKE_C_FLAGS_RELEASE "-m32")
+    # enforce 32 bit compilation; add "exceptions" option, without which certain
+    # mex functions cause matlab to crash
+    set(CMAKE_C_FLAGS
+        "${CMAKE_C_FLAGS} -m32 -fexceptions")
     message("Compiler flags:\t${CMAKE_C_FLAGS}")
-    message("Compiler flags (release):\t${CMAKE_C_FLAGS_RELEASE}")
 
     set(LIB_DIR Linux)
 
@@ -100,7 +105,7 @@ else()
 endif()
 
 # NOTE: link directories only apply to targets defined afterwards
-include_directories(${MATLAB_INCLUDE_DIR} ${SNDFILE_H_DIR})
+include_directories(${MDIRAC_SOURCE_DIR} ${MATLAB_INCLUDE_DIR} ${SNDFILE_H_DIR})
 link_directories(${MDIRAC_SOURCE_DIR}/${LIB_DIR} ${SNDFILE_LIB_DIR})
 
 add_library(TimeStretchDirac MODULE
@@ -114,4 +119,5 @@ set_target_properties(TimeStretchDirac PROPERTIES
     PREFIX ""
     SUFFIX ".${MEX_EXT}")
 
-target_link_libraries(TimeStretchDirac ${SNDFILE_LIB} ${MATLAB_MEX_LIBRARY} ${DIRAC_LIB} ${VECLIB_LIB})
+target_link_libraries(TimeStretchDirac
+    m ${SNDFILE_LIB} ${MATLAB_MEX_LIBRARY} ${DIRAC_LIB} ${VECLIB_LIB})
