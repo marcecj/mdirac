@@ -112,8 +112,11 @@ add_library(TimeStretchDirac MODULE
     dirac.c Dirac.h dirac.def
     ${MEX_VERSION_C})
 
+# set_property(SOURCE ${MEX_VERSION_C} dirac.c
+#     PROPERTY COMPILE_FLAGS "-Wall -Wextra -O0 -fno-PIC")
+
 set_target_properties(TimeStretchDirac PROPERTIES
-    COMPILE_FLAGS ""
+    COMPILE_FLAGS "-Wall -Wextra -dr" # dump GCCs internal code representation
     LINK_FLAGS ""
     DEFINE_SYMBOL "MATLAB_MEX_FILE"
     PREFIX ""
