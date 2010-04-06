@@ -18,7 +18,6 @@ include(FindMatlab)
 # stupid error message.
 #
 # include(CheckIncludeFile)
-# check_include_file(sndfile.h SNDFILE_H) 
 
 # TODO: why must "lib" be prepended to library names?
 if(WIN32)
@@ -31,16 +30,6 @@ if(WIN32)
 
     set(DIRAC_LIB DiracLE)
     add_library(libDiracLE SHARED IMPORTED)
-    set(SNDFILE_LIB libsndfile-1)
-    add_library(libsndfile SHARED IMPORTED)
-
-    # Deal with stupid non-standard library/header locations under Windows.
-    # Maybe more possibilities need to be added here.
-    # (alternative: copy relevant files to project directory)
-    set(SNDFILE_DIRS
-        "C:/Programme/Mega-Nerd/libsndfile")
-    find_path(SNDFILE_H_DIR sndfile.h ${SNDFILE_DIRS})
-    find_path(SNDFILE_LIB_DIR sndfile ${SNDFILE_DIRS})
 
     set(MEX_VERSION_C "${MATLAB_INCLUDE_DIR}/mexversion.rc")
     set(MEX_EXT "mexw32")
@@ -59,8 +48,6 @@ elseif(APPLE)
 
     set(DIRAC_LIB DiracLE)
     add_library(libDiracLE STATIC IMPORTED)
-    set(SNDFILE_LIB sndfile)
-    add_library(libsndfile SHARED IMPORTED)
 
     # on OS X the Framework vecLib is required
     find_library(VECLIB_LIB vecLib)
@@ -90,8 +77,6 @@ elseif(UNIX)
 
     set(DIRAC_LIB Dirac)
     add_library(libDirac STATIC IMPORTED)
-    set(SNDFILE_LIB sndfile)
-    add_library(libsndfile SHARED IMPORTED)
 
     # abuse MATLAB_INCLUDE_DIR to get to the src directory
     set(MEX_VERSION_C "${MATLAB_INCLUDE_DIR}/../src/mexversion.c")
@@ -105,22 +90,22 @@ else()
 endif()
 
 # NOTE: link directories only apply to targets defined afterwards
-include_directories(${MDIRAC_SOURCE_DIR} ${MATLAB_INCLUDE_DIR} ${SNDFILE_H_DIR})
-link_directories(${MDIRAC_SOURCE_DIR}/${LIB_DIR} ${SNDFILE_LIB_DIR})
+include_directories(${MDIRAC_SOURCE_DIR} ${MATLAB_INCLUDE_DIR})
+link_directories(${MDIRAC_SOURCE_DIR}/${LIB_DIR})
 
-add_library(TimeStretchDirac MODULE
-    dirac.c Dirac.h dirac.def
+add_library(mDirac MODULE
+    mDirac.c Dirac.h mDirac.def
     ${MEX_VERSION_C})
 
 # set_property(SOURCE ${MEX_VERSION_C} dirac.c
 #     PROPERTY COMPILE_FLAGS "-Wall -Wextra -O0 -fno-PIC")
 
-set_target_properties(TimeStretchDirac PROPERTIES
-    COMPILE_FLAGS "-Wall -Wextra -dr" # dump GCCs internal code representation
+set_target_properties(mDirac PROPERTIES
+    COMPILE_FLAGS "-Wall -Wextra -Wpadded -dr" # dump GCCs internal code representation
     LINK_FLAGS ""
     DEFINE_SYMBOL "MATLAB_MEX_FILE"
     PREFIX ""
     SUFFIX ".${MEX_EXT}")
 
-target_link_libraries(TimeStretchDirac
-    m ${SNDFILE_LIB} ${MATLAB_MEX_LIBRARY} ${DIRAC_LIB} ${VECLIB_LIB})
+target_link_libraries(mDirac
+    m ${MATLAB_MEX_LIBRARY} ${DIRAC_LIB} ${VECLIB_LIB})

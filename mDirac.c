@@ -1,14 +1,10 @@
 #include <mex.h>
 #include <Dirac.h>
-#include <sndfile.h>
 #include <math.h>
 #include <string.h>
 
 /* function OutData = TimeStretchDirac(InData,fs,TimeStretchFaktor, Mode) */
 typedef struct {
-    SF_INFO*   sf_file_info;
-    SNDFILE*   sf_input_file;
-    char*      sf_input_fname;
     double*    dirac_input_data;
     float      dirac_ts_factor;
     int        dirac_mode;
@@ -16,7 +12,6 @@ typedef struct {
     float      fs;
     int        input_num_channels;
     int        input_num_samples;
-    bool       input_is_from_file;
     int        cur_sample;
 } DIRAC_STATE;
 
@@ -27,7 +22,6 @@ void initiate_state(DIRAC_STATE *state, int nrhs, const mxArray *prhs[])
 {
     /* initiate some variables */
     state->cur_sample = 0;
-    state->input_is_from_file = false;
 
     if( nrhs < 1 )
         mexErrMsgTxt("Missing argument: you need to at least pass an array or a file name.");
@@ -35,30 +29,6 @@ void initiate_state(DIRAC_STATE *state, int nrhs, const mxArray *prhs[])
     
     if( mxIsEmpty(prhs[0]) )
         mexErrMsgTxt("Please no empty arrays!");
-    else if( mxIsChar(prhs[0]) )
-    {
-        int str_size = mxGetN(prhs[0])+1;
-        state->sf_input_fname = (char*)mxCalloc(str_size, sizeof(char));
-        if( state->sf_input_fname == NULL )
-            mexErrMsgTxt("mxCalloc error!");
-        mxGetString(prhs[0], state->sf_input_fname, str_size);
-
-        /*
-         * initiate sf_file_info struct pointer
-         */
-        state->sf_file_info = (SF_INFO*)mxMalloc(sizeof(SF_INFO));
-        if( !state->sf_file_info )
-            mexErrMsgTxt("could not allocate SF_INFO* instance");
-        /* format needs to be set to 0 before a file is opened */
-        state->sf_file_info->format = 0;
-
-        state->input_is_from_file = true;
-        mexPrintf("Opening file...\n");
-        state->sf_input_file = sf_open(state->sf_input_fname, SFM_READ,
-                state->sf_file_info);
-        if( !state->sf_input_file )
-            mexErrMsgTxt("could not open sound file");
-    }
     else if( mxIsNumeric(prhs[0]) ) {
         state->dirac_input_data   = mxGetPr(prhs[0]);
         state->input_num_channels = mxGetM(prhs[0]);
@@ -66,7 +36,7 @@ void initiate_state(DIRAC_STATE *state, int nrhs, const mxArray *prhs[])
         mexPrintf("input_num_samples = %i\n", state->input_num_samples);
     }
     else
-        mexErrMsgTxt("Only double array and strings are accepted as first argument.");
+        mexErrMsgTxt("Only double array are accepted as first argument.");
 
     if( nrhs < 2 )
         state->fs = 44100.f;
@@ -107,57 +77,34 @@ long fill_buffer(float* data, long num_frames, void* dirac_state)
     DIRAC_STATE* state = (DIRAC_STATE*)dirac_state;
 
     long N=0, processed_frames=0;
-    if( state->input_is_from_file )
-    {
-        /* TODO: this needs to be completed */
-
-        /*
-         * FIXME: This causes matlab to crash:
-         * processed_frames = sf_readf_float(state->sf_input_file, data, num_frames);
-         */
-        processed_frames = sf_read_float(state->sf_input_file, data, num_frames);
-
-        if( processed_frames > 0 && state->sf_file_info->seekable )
-            processed_frames = sf_seek(state->sf_input_file, num_frames, SEEK_CUR);
-
-        int sndfile_error = sf_error(state->sf_input_file);
-        if( sndfile_error != SF_ERR_NO_ERROR ) {
-            mexWarnMsgTxt("libsndfile error!");
-            mexErrMsgTxt(sf_error_number(sndfile_error));
-            /* mexWarnMsgTxt(sf_error_number(sndfile_error)); */
-        }
+    if( state->cur_sample + num_frames < state->input_num_samples ) {
+        N = num_frames;
+    } else if( state->cur_sample < state->input_num_samples ) {
+        N = state->input_num_samples - state->cur_sample;
+    } else {
+        N = 0;
+        state->cur_sample = 0;
     }
-    else
-    {
-        if( state->cur_sample + num_frames < state->input_num_samples ) {
-            N = num_frames;
-        } else if( state->cur_sample < state->input_num_samples ) {
-            N = state->input_num_samples - state->cur_sample;
-        } else {
-            N = 0;
-            state->cur_sample = 0;
-        }
 
-        /*
-         * Copy input data to Diracs input buffer.
-         */
+    /*
+     * Copy input data to Diracs input buffer.
+     */
 
-         /*
-         * TODO: this should work, but the resulting array is full of NaNs
-         *
-          * float* temp_in = (float*)state->dirac_input_data;
-          * memmove(data, temp_in + state->cur_sample, N*sizeof(float));
-          * state->cur_sample += N;
-          */
-         
-        int i;
-        for( i=0; i<N; i++ )
-            data[i] = (float)state->dirac_input_data[
-                state->dirac_cur_instance*state->input_num_samples +
-                state->cur_sample++];
+    /*
+     * TODO: this should work, but the resulting array is full of NaNs
+     *
+     * float* temp_in = (float*)state->dirac_input_data;
+     * memmove(data, temp_in + state->cur_sample, N*sizeof(float));
+     * state->cur_sample += N;
+     */
 
-        processed_frames = N;
-    }
+    int i;
+    for( i=0; i<N; i++ )
+        data[i] = (float)state->dirac_input_data[
+            state->dirac_cur_instance*state->input_num_samples +
+            state->cur_sample++];
+
+    processed_frames = N;
 
     return processed_frames;
 }
@@ -165,10 +112,6 @@ long fill_buffer(float* data, long num_frames, void* dirac_state)
 /* function to clear memory at exit */
 void clear_memory(void)
 {
-    if( !dirac_state.sf_input_file )
-        sf_close(dirac_state.sf_input_file);
-    /* if( !dirac_state.sf_file_info ) */
-    /*     free(dirac_state.sf_file_info); */
     if( !dirac )
         DiracDestroy(dirac);
 }
@@ -184,19 +127,6 @@ void mexFunction(int nlhs, mxArray *plhs[],
     mexAtExit(&clear_memory);
 
     initiate_state(&dirac_state, nrhs, prhs);
-
-    if( dirac_state.input_is_from_file ) {
-        mexPrintf("Frames\t: %i\n"     , dirac_state.sf_file_info->frames);
-        mexPrintf("Samplerate\t: %i\n" , dirac_state.sf_file_info->samplerate);
-        mexPrintf("Channels\t: %i\n"   , dirac_state.sf_file_info->channels);
-        mexPrintf("Format\t: %i\n"     , dirac_state.sf_file_info->format);
-        mexPrintf("Sections\t: %i\n"   , dirac_state.sf_file_info->sections);
-        mexPrintf("Seekable\t: %i\n"   , dirac_state.sf_file_info->seekable);
-        /* dirac_state.input_num_channels  = dirac_state.sf_file_info->channels; */
-        dirac_state.input_num_channels  = 1;
-        dirac_state.input_num_samples   = dirac_state.sf_file_info->frames;
-    }
-
 
     /* 
      * initiate one Dirac instance per channel
@@ -269,7 +199,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
 
     /*
      * free some memory
-     * sf_close(dirac_state.sf_input_file);
+     *
      * DiracDestroy(dirac);
      */
 }

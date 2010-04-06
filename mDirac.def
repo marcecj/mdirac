@@ -1,2 +1,2 @@
-LIBRARY dirac.c
+LIBRARY mDirac.c
 EXPORTS mexFunction
