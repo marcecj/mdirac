@@ -9,14 +9,19 @@ sig2 = cos(2*pi*100*linspace(0,1,fs));
 % b = TimeStretchDirac([sig;sig;sig]);
 a = mDirac(sig,fs,1.15,1);
 b = mDirac([sig;sig;sig],fs,1.15,1);
+sig3 = [sig;sig;sig];
+c    = zeros(3,ceil(1.15*fs));
+for kk=1:3
+    c(kk,:) = mDirac(sig3(kk,:));
+end
 
-figure;
-subplot(2,1,1);
-plot(sig);
-set(gca,'XLim',[0 fs*1.15]);
-subplot(2,1,2);
-plot(a);
-set(gca,'XLim',[0 fs*1.15]);
+% figure;
+% subplot(2,1,1);
+% plot(sig);
+% set(gca,'XLim',[0 fs*1.15]);
+% subplot(2,1,2);
+% plot(a);
+% set(gca,'XLim',[0 fs*1.15]);
 
 figure;
 subplot(3,1,1);
@@ -25,6 +30,14 @@ subplot(3,1,2);
 plot(b(2,:));
 subplot(3,1,3);
 plot(b(3,:));
+
+% figure;
+% subplot(3,1,1);
+% plot(c(1,:));
+% subplot(3,1,2);
+% plot(c(2,:));
+% subplot(3,1,3);
+% plot(c(3,:));
 
 figure;
 subplot(3,1,1);

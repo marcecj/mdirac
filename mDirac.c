@@ -3,7 +3,6 @@
 #include <math.h>
 #include <string.h>
 
-/* function OutData = TimeStretchDirac(InData,fs,TimeStretchFaktor, Mode) */
 typedef struct {
     double*    dirac_input_data;
     float      dirac_ts_factor;
@@ -95,8 +94,8 @@ long fill_buffer(float* data, long num_frames, void* dirac_state)
     int i;
     for( i=0; i<N; i++ )
         data[i] = (float)state->dirac_input_data[
-            state->dirac_cur_instance*state->input_num_samples +
-            state->cur_sample++];
+            state->dirac_cur_instance +
+            state->input_num_channels*state->cur_sample++];
 
     return N;
 }
@@ -179,7 +178,8 @@ void mexFunction(int nlhs, mxArray *plhs[],
 
             int j;
             for( j=0; j<ret-correction_factor && ret>0; j++)
-                output[i*new_size + total_size-ret + j] = (double)output_data[j];
+                /* output[i*new_size + total_size-ret + j] = (double)output_data[j]; */
+                output[i + total_size-ret + j*dirac_state.input_num_channels] = (double)output_data[j];
         }
         while( ret > 0 );
     }
