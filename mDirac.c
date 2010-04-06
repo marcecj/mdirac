@@ -76,26 +76,20 @@ long fill_buffer(float* data, long num_frames, void* dirac_state)
 {
     DIRAC_STATE* state = (DIRAC_STATE*)dirac_state;
 
-    long N=0, processed_frames=0;
+    long N=0;
     if( state->cur_sample + num_frames < state->input_num_samples ) {
         N = num_frames;
     } else if( state->cur_sample < state->input_num_samples ) {
         N = state->input_num_samples - state->cur_sample;
+        mexPrintf("cur_sample < input_num_samples\n");
     } else {
         N = 0;
         state->cur_sample = 0;
+        mexPrintf("cur_sample = 0\n");
     }
 
     /*
      * Copy input data to Diracs input buffer.
-     */
-
-    /*
-     * TODO: this should work, but the resulting array is full of NaNs
-     *
-     * float* temp_in = (float*)state->dirac_input_data;
-     * memmove(data, temp_in + state->cur_sample, N*sizeof(float));
-     * state->cur_sample += N;
      */
 
     int i;
@@ -104,38 +98,38 @@ long fill_buffer(float* data, long num_frames, void* dirac_state)
             state->dirac_cur_instance*state->input_num_samples +
             state->cur_sample++];
 
-    processed_frames = N;
-
-    return processed_frames;
+    return N;
 }
 
 /* function to clear memory at exit */
 void clear_memory(void)
 {
+    int i;
+    for( i=0; i<dirac_state.input_num_channels; i++ )
+        if( !dirac[i] )
+            DiracDestroy(dirac[i]);
     if( !dirac )
-        DiracDestroy(dirac);
+        free(dirac);
 }
 
 void mexFunction(int nlhs, mxArray *plhs[],
                  int nrhs, const mxArray *prhs[])
 {
-    /*
-     * various initiations
-     */
+    /* various initiations */
 
     int i; // counter in for-loops
     mexAtExit(&clear_memory);
 
     initiate_state(&dirac_state, nrhs, prhs);
 
-    /* 
-     * initiate one Dirac instance per channel
-     */
+    /* initiate one Dirac instance per channel */
 
     dirac = (void**)mxMalloc(dirac_state.input_num_channels*sizeof(void*));
     if( !dirac )
         mexErrMsgTxt("Could not create Dirac object array, aborting.\n");
 
+    /* Create one dirac instance per channel beforehand, instead of constantly
+     * creating/destroying in the second for-loop. */
     for( i=0; i<dirac_state.input_num_channels; i++ )
     {
         mexPrintf("i = %i\n", i);
@@ -144,62 +138,51 @@ void mexFunction(int nlhs, mxArray *plhs[],
                 &fill_buffer);
         if( !dirac[i] )
             mexErrMsgTxt("Could not create Dirac object, aborting.\n");
-    }
 
-    /* set the stretch/shift factors */
-
-    for( i=0; i<dirac_state.input_num_channels; i++ )
-    {
+        /* set the stretch/shift factors */
         DiracSetProperty(kDiracPropertyTimeFactor, dirac_state.dirac_ts_factor, dirac[i]);
         DiracSetProperty(kDiracPropertyPitchFactor, 1.0, dirac[i]);
         DiracSetProperty(kDiracPropertyFormantFactor, 1.0, dirac[i]);
     }
 
-    long num_frames    = 8192;
+    /* long num_frames    = 8192; */
     long new_size = (int)ceilf(dirac_state.dirac_ts_factor * dirac_state.input_num_samples);
-    plhs[0]            = mxCreateDoubleMatrix(dirac_state.input_num_channels, new_size, mxREAL);
+    long num_frames    = new_size;
+    plhs[0]            = mxCreateDoubleMatrix((mwSize)dirac_state.input_num_channels, (mwSize)new_size, mxREAL);
     double* output     = mxGetPr(plhs[0]);
-    mexPrintf("%ix%i Matrix\n", mxGetM(plhs[0]), mxGetN(plhs[0]));
+    mexPrintf("Output will be %ix%i Matrix\n", mxGetM(plhs[0]), mxGetN(plhs[0]));
 
-    float** output_data = mxCalloc(dirac_state.input_num_channels, sizeof(float*));
+    float* output_data = (float*)mxCalloc(num_frames, sizeof(float));
     if( output_data == NULL )
-        mexErrMsgTxt("mxCalloc output_data array failed!");
-
-    for( i=0; i<dirac_state.input_num_channels; i++ )
-    {
-        output_data[i] = mxCalloc(num_frames, sizeof(float));
-        if( output_data[i] == NULL )
-            mexErrMsgTxt("mxCalloc output_data failed!");
-    }
+        mexErrMsgTxt("mxCalloc output_data failed!");
 
     for( i=0; i<dirac_state.input_num_channels; i++ )
     {
         dirac_state.dirac_cur_instance = i;
         long ret=0, total_size=0;
+
         do {
             int correction_factor = 0;
 
-            mexPrintf("Before DiracProcess...");
-            ret = DiracProcessInterleaved(output_data[i], num_frames,
+            /* mexPrintf("Before DiracProcess..."); */
+            ret = DiracProcessInterleaved(output_data, num_frames,
                     (void*)&dirac_state, dirac[i]);
             mexPrintf("ret = %i\n", ret);
 
             total_size += ret;
             if( total_size > new_size )
+            {
+                mexPrintf("total_size > new_size\n");
                 correction_factor = total_size - new_size;
+            }
+            correction_factor = correction_factor > 0 ? correction_factor : 0;
 
             int j;
-            for( j=0; j<ret-correction_factor; j++)
-                output[i*new_size + j + total_size - ret] = (double)output_data[i][j];
+            for( j=0; j<ret-correction_factor && ret>0; j++)
+                output[i*new_size + total_size-ret + j] = (double)output_data[j];
         }
         while( ret > 0 );
     }
 
     mexPrintf("We're through!\n");
-
-    /*
-     * free some memory
-     *
-     * DiracDestroy(dirac);
-     */
 }

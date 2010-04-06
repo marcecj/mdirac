@@ -4,10 +4,11 @@ close all;
 fs = 44100;
 % sig = rand(1,fs);
 sig = sin(2*pi*100*linspace(0,1,fs));
+sig2 = cos(2*pi*100*linspace(0,1,fs));
 % a = TimeStretchDirac(sig,fs,1.15,1);
 % b = TimeStretchDirac([sig;sig;sig]);
 a = mDirac(sig,fs,1.15,1);
-b = mDirac([sig;sig;sig]);
+b = mDirac([sig;sig;sig],fs,1.15,1);
 
 figure;
 subplot(2,1,1);
