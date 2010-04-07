@@ -63,6 +63,9 @@ elseif(APPLE)
     set(MEX_VERSION_C "${MATLAB_INCLUDE_DIR}/../src/mexversion.c")
     set(MEX_EXT "mexmaci")
 
+    # here we need to link to libm
+    set(ADDITIONAL_LIBS "m")
+
 elseif(UNIX)
 
     message("Configuring for Unix (Linux)")
@@ -81,6 +84,12 @@ elseif(UNIX)
     # abuse MATLAB_INCLUDE_DIR to get to the src directory
     set(MEX_VERSION_C "${MATLAB_INCLUDE_DIR}/../src/mexversion.c")
     set(MEX_EXT "mexglx")
+
+    # additional CFLAGS; "-dr" dumps GCCs internal code representation (for a
+    # call graph utility)
+    set(EXTRA_CFLAGS "-ansi -Wall -Wextra -Wpadded -dr")
+    # here we need to link to libm
+    set(ADDITIONAL_LIBS "m")
 
 else()
 
@@ -101,11 +110,11 @@ add_library(mDirac MODULE
 #     PROPERTY COMPILE_FLAGS "-Wall -Wextra -O0 -fno-PIC")
 
 set_target_properties(mDirac PROPERTIES
-    COMPILE_FLAGS "-Wall -Wextra -Wpadded -dr" # dump GCCs internal code representation
+    COMPILE_FLAGS "${EXTRA_CFLAGS}"
     LINK_FLAGS ""
     DEFINE_SYMBOL "MATLAB_MEX_FILE"
     PREFIX ""
     SUFFIX ".${MEX_EXT}")
 
 target_link_libraries(mDirac
-    m ${MATLAB_MEX_LIBRARY} ${DIRAC_LIB} ${VECLIB_LIB})
+    ${ADDITIONAL_LIBS} ${MATLAB_MX_LIBRARY} ${MATLAB_MEX_LIBRARY} ${DIRAC_LIB} ${VECLIB_LIB})
