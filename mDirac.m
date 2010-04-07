@@ -1,4 +1,4 @@
-function OutData = mDirac(InData,fs,TimeStretchFaktor, Mode)
+function OutData = mDirac(InData, fs, TimeStretchFaktor, Mode)
 % function to change duration of Audiodata without changing the pitch
 % by using the dirac library
 % Usage: OutData = TimeStretchDirac(InData,fs,TimeStretchFaktor, Mode)
