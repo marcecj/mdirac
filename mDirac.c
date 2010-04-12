@@ -101,7 +101,7 @@ long fill_buffer(float* data, long num_frames, void* dirac_state)
 void clear_memory(void)
 {
     if( !dirac )
-        free(dirac);
+        DiracDestroy(dirac);
 }
 
 void mexFunction(int nlhs, mxArray *plhs[],
@@ -119,7 +119,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
     mexAtExit(&clear_memory);
     initialise_state(&dirac_state, nrhs, prhs);
 
-    dirac = (void*)mxMalloc(dirac_state.input_num_channels*sizeof(void));
+    dirac = (void*)mxMalloc(dirac_state.input_num_channels);
     if( !dirac )
         mexErrMsgTxt("Could not create Dirac object array, aborting.\n");
 

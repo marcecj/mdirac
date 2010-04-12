@@ -87,8 +87,8 @@ elseif(UNIX)
     set(MEX_EXT "mexglx")
 
     # additional CFLAGS; "-dr" dumps GCCs internal code representation (for a
-    # call graph utility)
-    set(EXTRA_CFLAGS "-std=c99 -Wall -Wextra -Wpadded -dr")
+    # call graph utility); C99 is a must because Dirac.h uses C99 features
+    set(EXTRA_CFLAGS "-std=c99 -pedantic -Wall -Wextra -Wpadded -dr")
     # here we need to link to libm
     set(ADDITIONAL_LIBS "m")
 
