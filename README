@@ -1,0 +1,145 @@
+Compiling the mDirac mex program
+================================
+Marc Joliet <marcec@gmx.de>
+
+Introduction
+------------
+
+This document explains how to compile mDirac.
+
+mDirac is a mex wrapper for the time-stretching/pitch-shifting C library Dirac,
+written by Stephan Bernsee of www.dspdimension.com.  It works with Matlab arrays
+of arbitrary MxN dimension, M being the number of samples per channel and N
+being the number of channels, as returned by, e.g., 'wavread()'.
+
+Compiling
+---------
+
+Currently, mDirac is compiled with the help of a CMake based build system.  On
+Linux, there is a limited SCons based build system available, but it is
+currently incomplete.  For details, see the relevant subsection.
+
+A problem of both systems is that at least two things are not implemented.  For
+one thing: installing.  It is expected that you copy the resulting binaries to
+wherever your Matlab installation looks for them.  The other problem: on
+Windows, required DLLs are not copied into the Visual Studio build directory.
+This means you have to add an appropriate command to the VS project file or copy
+the DLLs yourself.
+
+Prerequisites
+~~~~~~~~~~~~~
+
+mDirac has no external dependencies as the Dirac library is bundled.
+
+Using the CMake based build system
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Linux
+^^^^^
+
+Just open a terminal and type
+
+-----------------
+    $ cmake .
+-----------------
+
+while in the source directory.  This will produce a Makefile that works as
+expected, save for the aforementioned caveats.  Alternatively, you can use the
+'cmake-gui' application (see Windows subsection for a small introduction).
+
+Windows
+^^^^^^^
+
+Under Windows it is recommended to use the 'cmake-gui' application. Follow these steps:
+
+    1. Select the source and build directories (typically identical).
+    2. Click on 'Configure' to configure the build system.  Upon first use, you
+       will be prompted for the target, i.e. which IDE/compiler you use.
+    3. Click on 'Generate'.  This will, as the name implies, generates a project
+       file for your IDE of choice.
+
+You should now have an IDE project file in the source directory.  Open it and
+start compilation.
+
+Mac OS X
+^^^^^^^^
+
+On Mac OS X you can either follow the same steps as under Linux or under
+Windows according to your own preferences.
+
+Using the SCons based build system (Linux only)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Currently, the SCons based build system was written to work on my computer (a
+Linux box).  It will, in general, work on any Linux machine with:
+
+    - a 32 bit compiler and libraries
+      and
+    - Matlab installed in '/opt/matlab/'.
+
+If those requirements are met, simple typing 'scons' in the source directory
+will compile everything.
+
+Motivation
+^^^^^^^^^^
+
+`
+Right now this is just a small hobby project of mine. I do not intend it to
+replace the CMake based build system (though I hope it will). The following are
+just my current thoughts on the topic.
+`
+
+You might ask why I would try out SCons if I already have a working CMake based
+build system.  There are two main reasons I decided to explore SCons:
+
+    1. CMake seems (to me) to be unnecessarily complex to use.  It certainly
+       seems more complex than promised.  Maybe it is because I am using it in a
+       comparatively tiny project?
+
+    2. SCons is written and extended in Python, which to me is a huge plus over
+       the custom language used by CMake.
+
+And to be honest, what reminded me of SCons in the first place is
+http://esr.ibiblio.org/?p=1877[this blog entry], in which several people,
+including `Eric Raymond` (of "The Art of Unix Programming" and "The Cathedral
+and the Bazaar" fame), express their preference of SCons over other build
+systems.  The Python based "waf" also seems promising, though its development is
+supposedly still strongly in flux.  So I thought SCons would be worth trying
+out.
+
+So far, the resulting 'SConstruct' file is about 1/2 of the size of the
+'CMakeLists.txt' file (76 vs. 155 lines) and is IMHO also much easier to read.
+
+However, SCons is not without problems.  One issue for me is the lack of a
+'FindMatlab.cmake' equivalent.  There are, however, some options.  There is a
+'mex.py' python module on the SCons Wiki that finds and uses the mex wrapper
+script and sets the 'MEX_EXT' environment variable automatically.  I will
+probably create something else based off of it that acts like 'FindMatlab.cmake'
+so that I can keep the flexibility (and sanity) of a real build system.  In
+fact, while I am at it, I can have it automatically set appropriate options,
+e.g., '-fexceptions'.  That would further shrink the SConstruct file.
+
+For Windows there will be a couple more problems:
+    - You need to install Python, which is one installation more than with CMake
+      (wow, how horrible).
+    - SCons works as a self-contained system, meaning its purpose is not to
+      *generate* a build system like CMake does, but to *be* one and thus run by
+      itself (hence why it is often described as a Make replacement).  However,
+      there are at least three options:
+        - a function to create a VS solution file, which I have not tested
+        - using SCons as an external build tool in VS, and
+        - adding the SCons installation directory to PATH and calling it from a
+          VS console.
+    - The 'FindMatlab.cmake' vs. 'mex.py' issue above might be harder to solve
+      on Windows. I need to see if Matlab appends to the PATH variable and uses
+      the same options as the starter scripts under Unix. If the first is the case,
+      I could use the same code on all platforms and open Matlab as a
+      sub-process, use getenv() and parse the output (slow, but the results will
+      be cached). If both are the case (I doubt it), I could just grab the
+      necessary variables from the output of
+
+          ---------------
+            $ matlab -e
+          ---------------
+
+      and be done with it.
