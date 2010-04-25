@@ -3,8 +3,8 @@
 import os
 
 # Go ahead and define operating system independent options and dependencies; the
-# 'matlab' tool automatically sets various environment variables
-dirac_env = Environment(tools=['default', 'matlab'])
+# 'mex' tool automatically sets various environment variables
+dirac_env = Environment(tools=['default', 'mex'])
 dirac_env.Append(
         CPPPATH = "include",
         WINDOWS_INSERT_MANIFEST = True,
@@ -33,7 +33,7 @@ elif os.name == "mac":
 else:
     exit("Oops, not a supported platform.")
 
-# clone environment for mexversion from mDirac
+# clone environment from mDirac to mexversion
 mexversion_env = dirac_env.Clone()
 mexversion     = mexversion_env.SharedObject("mexversion.c")
 
