@@ -23,13 +23,13 @@ if os.name == "posix":
             CCFLAGS     = "-m32 -fexceptions -std=c99 -pedantic -Wall -Wextra -Wpadded -dr",
             LINKFLAGS   = "-m32"
             )
-    dirac = "Dirac"
+    dirac_lib = "Dirac"
 elif os.name == "nt":
     dirac_env.Append(LIBPATH="Win")
-    dirac = "DiracLE"
+    dirac_lib = "DiracLE"
 elif os.name == "mac":
     dirac_env.Append(LIBPATH="Mac")
-    dirac = "Dirac"
+    dirac_lib = "Dirac"
 else:
     exit("Oops, not a supported platform.")
 
@@ -42,5 +42,5 @@ if os.name == "mac":
     dirac_env.Append(FRAMEWORKS="vecLib")
 
 # add mDirac target
-dirac_env.Append(LIBS = dirac)
+dirac_env.Append(LIBS = dirac_lib)
 dirac_env.SharedLibrary("mDirac", ["mDirac.c", mexversion])
