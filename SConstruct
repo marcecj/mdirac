@@ -1,7 +1,7 @@
-# TODO: test Mac and Windows
-# TODO: add an option to do
+# TODO: Test Mac and Windows.
+# TODO: Add an option to do
 #           env = Environment(platform = 'win32')
-#       to create a MSVC project for Windows from Linux
+#       to create a MSVC project for Windows from Linux.
 
 import os
 
