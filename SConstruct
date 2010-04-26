@@ -11,47 +11,53 @@ AddOption('--linux32', dest='linux32', action='store_true',
         help='Force 32 bit compilation ("-m32" GCC option) on Linux.')
 
 # the mex tool automatically sets various environment variables
-dirac_env = Environment(tools=['default', ('matlab', {'mex': True})])
+dirac = Environment(tools=['default', ('matlab', {'mex': True})])
+platform = dirac['PLATFORM']
 
 # this tells SCons where to find mexversion.c
-Repository(dirac_env["MATLAB"]["SRC"])
+Repository(dirac["MATLAB"]["SRC"])
 
 # define operating system independent options and dependencies
-dirac_env.Append(
+dirac.Append(
         CPPPATH = "include",
+        LIBS    = ["mex", "mx"],
         WINDOWS_INSERT_MANIFEST = True,
-        LIBS = ["m", "mex", "mx"]
         )
+if os.name != 'nt':
+    dirac.Append(LIBS="m")
 
-# OS dependent stuff
+# OS dependent stuff, we assume GCC on Unix like platforms
 if os.name == "posix":
     # add "exceptions" option, without which any mex function that raises an
     # exception (e.g., mexErrMsgTxt()) causes Matlab to crash
-    dirac_env.Append(LIBPATH="Linux",
-            CCFLAGS = "-fexceptions -std=c99 -pedantic -Wall -Wextra -Wpadded -dr")
+    dirac.Append(LIBPATH="Linux",
+        CCFLAGS = "-fexceptions -std=c99 -pedantic -Wall -Wextra -Wpadded -dr")
     if GetOption('linux32'):
-        dirac_env.Append(CCFLAGS="-m32", LINKFLAGS="-m32")
-    dirac_lib = "Dirac"
+        dirac.Append(CCFLAGS="-m32", LINKFLAGS="-m32")
+    dirac_lib   = "Dirac"
 elif os.name == "nt":
-    dirac_env.Append(LIBPATH="Win")
-    dirac_lib = "DiracLE"
+    dirac.Append(LIBPATH="Win")
+    dirac_lib   = "DiracLE"
 elif os.name == "mac":
-    dirac_env.Append(LIBPATH="Mac",
+    dirac.Append(LIBPATH="Mac",
             CCFLAGS="-fexceptions -std=c99 -pedantic")
-    dirac_lib = "DiracLE"
+    dirac_lib   = "DiracLE"
 else:
     exit("Oops, not a supported platform.")
 
 # clone environment from mDirac to mexversion
-mexversion_env = dirac_env.Clone()
+mexversion = dirac.Clone()
 
 # do env dependent stuff
-dirac_env.Append(LIBS = dirac_lib)
+dirac.Append(LIBS = dirac_lib)
 
 # append dependency on vecLib framework on Mac OS X
 if os.name == "mac":
-    dirac_env.Append(FRAMEWORKS="vecLib")
+    dirac.Append(FRAMEWORKS="vecLib")
 
 # add targets
-mexversion = mexversion_env.SharedObject("mexversion.c")
-dirac_env.SharedLibrary("mDirac", ["mDirac.c", mexversion])
+if os.name != 'nt':
+    mexversion_obj = mexversion.SharedObject("mexversion.c")
+    dirac.SharedLibrary("mDirac", ["mDirac.c", mexversion_obj])
+else:
+    dirac.SharedLibrary("mDirac", ["mDirac.c", "mDirac.def"])
