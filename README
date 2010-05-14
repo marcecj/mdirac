@@ -125,8 +125,7 @@ Windows according to your own preferences.
 Copyrights
 ----------
 
-The source code to mDirac is made available under the MIT license (see the file
-``LICENSE'' in the source directory).
+For the copyrights to mDirac and the SCons Matlab tool, see the file LICENSE.
 
 DIRAC Time Stretch/Pitch Shift technology (c) 2005-2009 Stephan M. Bernsee,
 http://www.dspdimension.com[].
