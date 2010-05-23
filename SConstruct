@@ -1,65 +1,82 @@
 # TODO: Test Mac and Windows.
-# TODO: Add an option to do
-#           env = Environment(platform = 'win32')
-#       to create a MSVC project for Windows from Linux.
 
 import os
 
-# Add an option to enforce 32 bit compilation for students using 32 bit Matlab
-# on 64 bit platforms.
+# some options, help text says all
 AddOption('--linux32', dest='linux32', action='store_true',
           help='Force 32 bit compilation ("-m32" GCC option) on Linux.')
 AddOption('--make-msvc', dest='msvc', action='store_true',
-          help='Create a MSVC project file.')
+          help='Create a MSVS solution file on Windows.')
+
+matlab_is_32_bits = GetOption('linux32')
+make_msvc         = GetOption('msvc')
 
 # the mex tool automatically sets various environment variables
-dirac = Environment(tools=['default', ('matlab', {'mex': True})])
+dirac    = Environment(tools = ['default', ('matlab', {'mex': True})])
 platform = dirac['PLATFORM']
 
-# this tells SCons where to find mexversion.c
-Repository(dirac["MATLAB"]["SRC"])
+if platform == "win32":
+    # Matlab doesn't follow the Windows standard and adds a 'lib' prefix anyway
+    common_libs = ["libmex", "libmx"]
+else:
+    common_libs = ["mex", "mx", "m"]
 
-# define operating system independent options and dependencies
-dirac.Append(
-    CPPPATH = "include",
-    LIBS    = (["libmex", "libmx"] if platform == "win32" else ["mex", "mx"]),
-    WINDOWS_INSERT_MANIFEST = True,
-)
-if os.name != 'nt':
-    dirac.Append(LIBS="m")
+# this tells SCons where to find mexversion.c
+dirac.Repository(dirac["MATLAB"]["SRC"])
 
 # OS dependent stuff, we assume GCC on Unix like platforms
-if os.name == "posix":
+if platform == "posix":
     # add "exceptions" option, without which any mex function that raises an
     # exception (e.g., mexErrMsgTxt()) causes Matlab to crash
     dirac.Append(LIBPATH="Linux",
-                 CCFLAGS = "-fexceptions -pthread -std=c99 -pedantic -Wall -Wextra -Wpadded -dr")
-    if GetOption('linux32'):
+                 CCFLAGS = "-O2 -fexceptions -pedantic -pthread -Wall -Wextra -Wpadded -dr",
+                 LINKFLAGS="--as-needed")
+    if matlab_is_32_bits:
         dirac.Append(CCFLAGS="-m32", LINKFLAGS="-m32")
     dirac_lib   = "Dirac"
-elif os.name == "nt":
+elif platform == "win32":
     dirac.Append(LIBPATH="Win")
     dirac_lib   = "DiracLE"
-elif os.name == "mac":
+elif platform == "darwin":
     dirac.Append(LIBPATH="Mac",
-                 CCFLAGS="-fexceptions -std=c99 -pedantic")
+                 CCFLAGS="-O2 -fexceptions -pedantic -pthread -Wall -Wextra -Wpadded",
+                 LINKFLAGS="--as-needed")
     dirac_lib   = "DiracLE"
 else:
     exit("Oops, not a supported platform.")
 
+# define operating system independent options and dependencies
+dirac.Append(CPPPATH = "include",
+             WINDOWS_INSERT_MANIFEST = True)
+
 # clone environment from mDirac to mexversion
 mexversion = dirac.Clone()
 
-# do env dependent stuff
-dirac.Append(LIBS = dirac_lib)
+# look for libraries and corresponding headers and exit if they aren't found
+# (autoconf-like behaviour)
+if not GetOption('clean'):
+    conf = dirac.Configure()
+    if not conf.CheckLibWithHeader(dirac_lib, 'Dirac.h', 'cpp'):
+        exit("You need to install Dirac!")
+    dirac = conf.Finish()
 
-# append dependency on vecLib framework on Mac OS X
-if os.name == "mac":
-    dirac.Append(FRAMEWORKS="vecLib")
+dirac.Append(LIBS = common_libs)
 
-# add targets
-if os.name != 'nt':
+# manually set the language standard after the configure checks (otherwise the
+# Dirac check will not work because it is a C++ library)
+if platform == 'posix':
+    # vecLib framework is needed on Mac OS X
+    dirac.Append(CFLAGS="--std=c99", FRAMEWORKS="vecLib")
+
+# add compile targets
+if platform != 'win32':
     mexversion_obj = mexversion.SharedObject("mexversion.c")
     dirac.SharedLibrary("mDirac", ["mDirac.c", mexversion_obj])
 else:
-    dirac.SharedLibrary("mDirac", ["mDirac.c", "mDirac.def"])
+    # optionally create MS VS project, otherwise just compile
+    if make_msvc:
+        dirac_vs = dirac.MSVSProject("mDirac"+dirac['MSVSPROJECTSUFFIX'],
+                                     ["mDirac.c", "mDirac.def"])
+        MSVSSolution(target="TimeStretchDirac", projects=[dirac_vs])
+    else:
+        dirac.SharedLibrary("mDirac", ["mDirac.c", "mDirac.def"])
