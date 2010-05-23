@@ -8,7 +8,9 @@ import os
 # Add an option to enforce 32 bit compilation for students using 32 bit Matlab
 # on 64 bit platforms.
 AddOption('--linux32', dest='linux32', action='store_true',
-        help='Force 32 bit compilation ("-m32" GCC option) on Linux.')
+          help='Force 32 bit compilation ("-m32" GCC option) on Linux.')
+AddOption('--make-msvc', dest='msvc', action='store_true',
+          help='Create a MSVC project file.')
 
 # the mex tool automatically sets various environment variables
 dirac = Environment(tools=['default', ('matlab', {'mex': True})])
@@ -19,10 +21,10 @@ Repository(dirac["MATLAB"]["SRC"])
 
 # define operating system independent options and dependencies
 dirac.Append(
-        CPPPATH = "include",
-        LIBS    = (["libmex", "libmx"] if platform == "win32" else ["mex", "mx"]),
-        WINDOWS_INSERT_MANIFEST = True,
-        )
+    CPPPATH = "include",
+    LIBS    = (["libmex", "libmx"] if platform == "win32" else ["mex", "mx"]),
+    WINDOWS_INSERT_MANIFEST = True,
+)
 if os.name != 'nt':
     dirac.Append(LIBS="m")
 
@@ -31,7 +33,7 @@ if os.name == "posix":
     # add "exceptions" option, without which any mex function that raises an
     # exception (e.g., mexErrMsgTxt()) causes Matlab to crash
     dirac.Append(LIBPATH="Linux",
-        CCFLAGS = "-fexceptions -pthread -std=c99 -pedantic -Wall -Wextra -Wpadded -dr")
+                 CCFLAGS = "-fexceptions -pthread -std=c99 -pedantic -Wall -Wextra -Wpadded -dr")
     if GetOption('linux32'):
         dirac.Append(CCFLAGS="-m32", LINKFLAGS="-m32")
     dirac_lib   = "Dirac"
@@ -40,7 +42,7 @@ elif os.name == "nt":
     dirac_lib   = "DiracLE"
 elif os.name == "mac":
     dirac.Append(LIBPATH="Mac",
-            CCFLAGS="-fexceptions -std=c99 -pedantic")
+                 CCFLAGS="-fexceptions -std=c99 -pedantic")
     dirac_lib   = "DiracLE"
 else:
     exit("Oops, not a supported platform.")
