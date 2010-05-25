@@ -1,5 +1,5 @@
-Compiling the mDirac Mex extension
-==================================
+The mDirac Mex extension
+========================
 Marc Joliet <marcec@gmx.de>
 
 Introduction
@@ -7,9 +7,9 @@ Introduction
 
 This document explains how to compile mDirac.
 
-mDirac is a mex wrapper for the time-stretching/pitch-shifting C library Dirac,
-written by Stephan Bernsee of http://www.dspdimension.com[].  It works with
-Matlab arrays of arbitrary MxN dimension, M being the number of samples per
+mDirac is a mex wrapper for the time-stretching/pitch-shifting C++ library
+Dirac, written by Stephan Bernsee of http://www.dspdimension.com[].  It works
+with Matlab arrays of arbitrary MxN dimension, M being the number of samples per
 channel and N being the number of channels, as returned by, e.g., 'wavread()'.
 
 Compiling
@@ -66,15 +66,15 @@ Just open a terminal and type
     $ scons
 -----------------
 
-while in the source directory.  Users with 32 bit Matlab on 64 bit systems want
-to pass the --linux32 option to enforce 32 bit compilation.
+while in the source directory.  Users with 32 bit Matlab on 64 bit systems
+should pass the --linux32 option to enforce 32 bit compilation.
 
 Windows
 ^^^^^^^
 
 If SCons is in your PATH, you can open a console and follow the steps under
-Linux.  It is planned for later to support creating a Visual Studio project
-(SCons already provides the necessary facilities).  For other IDEs, see
+Linux.  The '--make-msvs' option creates a MS VisualStudio Solution file with
+mDirac as a project.  For other IDEs, see
 http://www.scons.org/wiki/IDEIntegration[].
 
 Mac OS X
