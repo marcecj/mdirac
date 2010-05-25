@@ -7,9 +7,12 @@ AddOption('--linux32', dest='linux32', action='store_true',
           help='Force 32 bit compilation ("-m32" GCC option) on Linux.')
 AddOption('--make-msvc', dest='msvc', action='store_true',
           help='Create a MSVS solution file on Windows.')
+AddOption('--debug-syms', dest='debug', action='store_true',
+          help='Add debugging symbols')
 
 matlab_is_32_bits = GetOption('linux32')
 make_msvc         = GetOption('msvc')
+
 
 # the mex tool automatically sets various environment variables
 dirac    = Environment(tools = ['default', ('matlab', {'mex': True})])
@@ -62,11 +65,13 @@ if not GetOption('clean'):
 
 dirac.Append(LIBS = common_libs)
 
-# manually set the language standard after the configure checks (otherwise the
-# Dirac check will not work because it is a C++ library)
+# manually set these settings after the configure checks (otherwise the Dirac
+# check will not work because it is a C++ library)
 if platform == 'posix':
     # vecLib framework is needed on Mac OS X
     dirac.Append(CFLAGS="--std=c99", FRAMEWORKS="vecLib")
+if GetOption('debug'):
+    dirac.MergeFlags(["-g", "-O0"])
 
 # add compile targets
 if platform != 'win32':
