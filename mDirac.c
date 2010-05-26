@@ -6,7 +6,7 @@
 typedef struct {
     double*    dirac_input_data;
     float      dirac_ts_factor;     // time stretch factor
-    int        dirac_mode;          // mode (lambda parametr)
+    int        dirac_mode;          // mode (lambda parameter)
     int        dirac_cur_channel;  // one instance per channel
     float      fs;
     int        input_num_channels;
@@ -40,7 +40,6 @@ void initialise_state(DIRAC_STATE *state, int nrhs, const mxArray *prhs[])
     else
     {
         state->fs = (float)*mxGetPr(prhs[1]);
-        /* mexPrintf("fs = %f\n", state->fs); */
         if( state->fs != 44100 && state->fs != 48000 )
             mexErrMsgTxt("Sampling rate can either be 44.1 or 48 kHz, you need to re-sample your data beforehand.");
     }
@@ -100,7 +99,7 @@ long fill_buffer(float* data, long num_frames, void* dirac_state)
 /* function to clear memory at exit */
 void clear_memory(void)
 {
-    if( !dirac )
+    if( dirac != NULL )
         DiracDestroy(dirac);
 }
 
@@ -110,27 +109,26 @@ void mexFunction(int nlhs, mxArray *plhs[],
     /* various initiations */
 
     DIRAC_STATE dirac_state;
-    int i, j; // counters in for-loops
-    long new_size;
-    const long num_frames=8192;
-    double* output;
-    float* dirac_output;
+    int         i, j; //counters in for-loops
+    long        new_size;
+    const long  num_frames=8192;
+    double*     output;
+    float*      dirac_output;
 
     mexAtExit(&clear_memory);
     initialise_state(&dirac_state, nrhs, prhs);
 
     dirac = (void*)mxMalloc(dirac_state.input_num_channels);
-    if( !dirac )
+    if( dirac == NULL )
         mexErrMsgTxt("Could not create Dirac object array, aborting.\n");
 
     new_size = (int)ceilf(dirac_state.dirac_ts_factor * dirac_state.input_num_samples);
     plhs[0]  = mxCreateDoubleMatrix((mwSize)new_size, (mwSize)dirac_state.input_num_channels, mxREAL);
     output   = mxGetPr(plhs[0]);
-    mexPrintf("Output will be %ix%i Matrix\n", mxGetM(plhs[0]), mxGetN(plhs[0]));
 
     dirac_output = (float*)mxCalloc(num_frames, sizeof(float));
-    if( !dirac_output )
-        mexErrMsgTxt("mxCalloc dirac_output failed!");
+    if( dirac_output == NULL )
+        mexErrMsgTxt("mxCalloc of dirac_output failed!");
 
     /* start processing */
     for( i=0; i<dirac_state.input_num_channels; i++ )
@@ -144,7 +142,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
         dirac = DiracCreateInterleaved(dirac_state.dirac_mode,
                 kDiracQualityPreview, 1, dirac_state.fs,
                 &fill_buffer);
-        if( !dirac )
+        if( dirac == NULL )
             mexErrMsgTxt("Could not create Dirac object, aborting.\n");
 
         /* set the stretch/shift factors */
@@ -172,6 +170,4 @@ void mexFunction(int nlhs, mxArray *plhs[],
 
         DiracDestroy(dirac);
     }
-
-    mexPrintf("Done...\n");
 }
