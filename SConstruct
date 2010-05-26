@@ -13,10 +13,10 @@ AddOption('--debug-syms', dest='debug', action='store_true',
 matlab_is_32_bits = GetOption('linux32')
 make_msvc         = GetOption('msvc')
 
-
 # the mex tool automatically sets various environment variables
-dirac    = Environment(tools = ['default', ('matlab', {'mex': True})])
-platform = dirac['PLATFORM']
+dirac        = Environment(tools = ['default', ('matlab', {'mex': True})])
+platform     = dirac['PLATFORM']
+msvs_variant = "Release"
 
 if platform == "win32":
     # Matlab doesn't follow the Windows standard and adds a 'lib' prefix anyway
@@ -72,6 +72,7 @@ if platform == 'posix':
     dirac.Append(CFLAGS="--std=c99", FRAMEWORKS="vecLib")
 if GetOption('debug'):
     dirac.MergeFlags(["-g", "-O0"])
+    msvs_variant = "Debug"
 
 # add compile targets
 if platform != 'win32':
@@ -82,6 +83,6 @@ else:
     if make_msvc:
         dirac_vs = dirac.MSVSProject("mDirac"+dirac['MSVSPROJECTSUFFIX'],
                                      ["mDirac.c", "mDirac.def"])
-        MSVSSolution(target="TimeStretchDirac", projects=[dirac_vs])
+        MSVSSolution("TimeStretchDirac", [dirac_vs], msvs_variant)
     else:
         dirac.SharedLibrary("mDirac", ["mDirac.c", "mDirac.def"])
