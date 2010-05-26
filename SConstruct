@@ -57,7 +57,7 @@ mexversion = dirac.Clone()
 
 # look for libraries and corresponding headers and exit if they aren't found
 # (autoconf-like behaviour)
-if not GetOption('clean'):
+if not (GetOption('clean') or GetOption('help')):
     conf = dirac.Configure()
     if not conf.CheckLibWithHeader(dirac_lib, 'Dirac.h', 'cpp'):
         exit("You need to install Dirac!")
