@@ -10,4 +10,4 @@ elseif strcmp(computer, 'MACI') || strcmp(computer, 'MACI')
 end
 
 % run test script
-test_dirac
+% test_dirac
