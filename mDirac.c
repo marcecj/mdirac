@@ -170,5 +170,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
         while( ret > 0 );
 
         DiracDestroy(dirac);
+        /* Set to NULL, otherwise dirac is destroyed twice */
+        dirac = NULL; 
     }
 }
