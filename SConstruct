@@ -32,7 +32,7 @@ if platform == "posix":
     # add "exceptions" option, without which any mex function that raises an
     # exception (e.g., mexErrMsgTxt()) causes Matlab to crash
     dirac.Append(LIBPATH="Linux",
-                 CCFLAGS = "-O2 -fexceptions -pedantic -pthread -Wall -Wextra -Wpadded -dr",
+                 CCFLAGS = "-O2 -fexceptions -pedantic -pthread -Wall -Wextra -Wpadded -fdump-rtl-expand",
                  LINKFLAGS="--as-needed")
     if matlab_is_32_bits:
         dirac.Append(CCFLAGS="-m32", LINKFLAGS="-m32")
