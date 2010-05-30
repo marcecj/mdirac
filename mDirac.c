@@ -161,7 +161,8 @@ void mexFunction(int nlhs, mxArray *plhs[],
              * new_size samples */
             if( total_size > new_size )
                 correction_factor = total_size - new_size;
-            correction_factor = correction_factor > 0 ? correction_factor : 0;
+            if( correction_factor < 0 )
+                correction_factor = 0;
 
             for( j=0; j<ret-correction_factor; j++)
                 output[i*new_size + total_size-ret+j] = (double)dirac_output[j];
