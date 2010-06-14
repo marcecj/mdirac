@@ -32,8 +32,8 @@ t_in    = linspace(0,sig_len,fs);
 t_out   = linspace(0,ceil(sig_len*ts),ceil(fs*ts));
 sig     = sin(2*pi*100*t_in)';
 
-a = mDirac(sig,fs,ts,1);
-b = mDirac([sig sig sig],fs,ts,3);
+a = mDirac(sig,fs,ts,1,1);
+b = mDirac([sig sig sig],fs,ts,3,3);
 
 % plot input and output in seperate subplots
 figure;
@@ -61,6 +61,7 @@ output2 = TimeStretchDirac(input);
 output2 = TimeStretchDirac(input,fs);
 output2 = TimeStretchDirac(input,fs,1.5);
 output2 = TimeStretchDirac(input,fs,1.5,3);
+output2 = TimeStretchDirac(input,fs,1.5,3,3);
 
 figure;
 subplot(2,1,1);
@@ -76,6 +77,7 @@ output3 = TimeStretchDirac('test.wav');
 output3 = TimeStretchDirac('test.wav',fs);
 output3 = TimeStretchDirac('test.wav',fs,1.5);
 output3 = TimeStretchDirac('test.wav',fs,1.5,3);
+output3 = TimeStretchDirac('test.wav',fs,1.5,3,3);
 
 figure;
 subplot(2,1,1);
