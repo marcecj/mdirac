@@ -61,6 +61,8 @@ void initialise_state(DIRAC_STATE *state, int nrhs, const mxArray *prhs[])
     }
 
     if( nrhs < 4 )
+        state->dirac_qual = kDiracLambdaPreview; 
+    else
     {
         switch( (int)mxGetScalar(prhs[3]) ) {
             case 0: state->dirac_mode = kDiracLambdaPreview; break;
@@ -70,11 +72,8 @@ void initialise_state(DIRAC_STATE *state, int nrhs, const mxArray *prhs[])
             case 4: state->dirac_mode = kDiracLambda4; break;
             case 5: state->dirac_mode = kDiracLambda5; break;
         }
-    }
-    else
-    {
-        state->dirac_mode = (int)mxGetScalar(prhs[3]);
-        if( state->dirac_mode < 0 || state->dirac_mode > 5 ) {
+        if( state->dirac_mode < kDiracLambdaPreview
+                || state->dirac_mode > kDiracLambda5 ) {
             mexWarnMsgTxt("Bad Dirac mode: defaulting to mode 3.");
             state->dirac_mode = kDiracLambda3;
         }
@@ -90,7 +89,8 @@ void initialise_state(DIRAC_STATE *state, int nrhs, const mxArray *prhs[])
             case 2: state->dirac_qual = kDiracQualityBetter; break;
             case 3: state->dirac_qual = kDiracQualityBest; break;
         }
-        if( state->dirac_qual < 0 || state->dirac_qual > 4 ) {
+        if( state->dirac_qual < kDiracQualityPreview
+                || state->dirac_qual > kDiracQualityBest ) {
             mexWarnMsgTxt("Bad Dirac quality: defaulting to medium quality.");
             state->dirac_qual = kDiracQualityGood;
         }

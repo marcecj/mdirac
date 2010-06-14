@@ -52,6 +52,11 @@ if nargin < 4
     Mode = 0;
 end
 
+if nargin < 5
+    disp('Dirac Quality not given, defaulting to ''Preview''.');
+    Quality = 0;
+end
+
 if ischar(InData)
     [InData, fs] = wavread(InData);
 end
