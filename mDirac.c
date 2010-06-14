@@ -7,6 +7,7 @@ typedef struct {
     double*    dirac_input_data;
     float      dirac_ts_factor;     // time stretch factor
     int        dirac_mode;          // mode (lambda parameter)
+    int        dirac_qual;          // quality
     int        dirac_cur_channel;  // one instance per channel
     float      fs;
     int        input_num_channels;
@@ -60,13 +61,38 @@ void initialise_state(DIRAC_STATE *state, int nrhs, const mxArray *prhs[])
     }
 
     if( nrhs < 4 )
-        state->dirac_mode = kDiracLambdaPreview; 
+    {
+        switch( (int)mxGetScalar(prhs[3]) ) {
+            case 0: state->dirac_mode = kDiracLambdaPreview; break;
+            case 1: state->dirac_mode = kDiracLambda1; break;
+            case 2: state->dirac_mode = kDiracLambda2; break;
+            case 3: state->dirac_mode = kDiracLambda3; break;
+            case 4: state->dirac_mode = kDiracLambda4; break;
+            case 5: state->dirac_mode = kDiracLambda5; break;
+        }
+    }
     else
     {
         state->dirac_mode = (int)mxGetScalar(prhs[3]);
         if( state->dirac_mode < 0 || state->dirac_mode > 5 ) {
             mexWarnMsgTxt("Bad Dirac mode: defaulting to mode 3.");
             state->dirac_mode = kDiracLambda3;
+        }
+    }
+
+    if( nrhs < 5 )
+        state->dirac_qual = kDiracQualityPreview; 
+    else
+    {
+        switch( (int)mxGetScalar(prhs[4]) ) {
+            case 0: state->dirac_qual = kDiracQualityPreview; break;
+            case 1: state->dirac_qual = kDiracQualityGood; break;
+            case 2: state->dirac_qual = kDiracQualityBetter; break;
+            case 3: state->dirac_qual = kDiracQualityBest; break;
+        }
+        if( state->dirac_qual < 0 || state->dirac_qual > 4 ) {
+            mexWarnMsgTxt("Bad Dirac quality: defaulting to medium quality.");
+            state->dirac_qual = kDiracQualityGood;
         }
     }
 }
@@ -140,7 +166,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
          * of an arbitrary limit on the number of channels; the overhead
          * shouldn't be too large for normal audio signals */
         dirac = DiracCreateInterleaved(dirac_state.dirac_mode,
-                kDiracQualityPreview, 1, dirac_state.fs,
+                dirac_state.dirac_qual, 1, dirac_state.fs,
                 &fill_buffer);
         if( dirac == NULL )
             mexErrMsgTxt("Could not create Dirac object, aborting.\n");

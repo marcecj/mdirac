@@ -1,4 +1,4 @@
-function OutData = TimeStretchDirac(InData,fs,TimeStretchFactor, Mode)
+function OutData = TimeStretchDirac(InData,fs,TimeStretchFactor, Mode, Quality)
 % A function to change duration of audio data without changing the pitch by
 % using the dirac library.
 %
@@ -8,7 +8,13 @@ function OutData = TimeStretchDirac(InData,fs,TimeStretchFactor, Mode)
 %                         containing Data (Len x Chns)
 %      fs:                sampling frequency: ignored if InData is a string
 %      TimeStretchFactor: the change factor range (0.5 ... 2) (0.5 means 2 times faster)
-%      Mode:              the Dirac mode (precision definition between time and frequency)
+%      Mode:              the Dirac mode (precision definition between time and
+%                         frequency). Valid values are integers from 0
+%                         (Preview), 1 (highest time precision) to 5 (highest
+%                         frequency precision).
+%      Quality:           the Dirac mode (precision definition between time and
+%                         frequency). Valid values are between 0 (preview) and 4
+%                         (best quality).
 % Output parameters:
 %      OutData:           the new data vector (Len x Chns)
 %
@@ -52,8 +58,8 @@ end
 
 if need_to_resample
     InData  = resample(InData, 48000, fs);
-    OutData = mDirac(InData, 48000, TimeStretchFactor, Mode);
+    OutData = mDirac(InData, 48000, TimeStretchFactor, Mode, Quality);
     OutData = resample(OutData, fs, 48000);
 else
-    OutData = mDirac(InData, fs, TimeStretchFactor, Mode);
+    OutData = mDirac(InData, fs, TimeStretchFactor, Mode, Quality);
 end
