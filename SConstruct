@@ -1,17 +1,17 @@
 # TODO: Test Mac and Windows.
 
-import os
-
 # some options, help text says all
 AddOption('--linux32', dest='linux32', action='store_true',
           help='Force 32 bit compilation ("-m32" GCC option) on Linux.')
-AddOption('--make-msvc', dest='msvc', action='store_true',
-          help='Create a MSVS solution file on Windows.')
+
+AddOption('--make-msvs', dest='msvs', action='store_true',
+          help='Create a MSVS solution file under Windows.')
+
 AddOption('--debug-syms', dest='debug', action='store_true',
           help='Add debugging symbols')
 
 matlab_is_32_bits = GetOption('linux32')
-make_msvc         = GetOption('msvc')
+make_msvs         = GetOption('msvs')
 
 # the mex tool automatically sets various environment variables
 dirac        = Environment(tools = ['default', ('matlab', {'mex': True})])
@@ -32,7 +32,7 @@ if platform == "posix":
     # add "exceptions" option, without which any mex function that raises an
     # exception (e.g., mexErrMsgTxt()) causes Matlab to crash
     dirac.Append(LIBPATH="Linux",
-                 CCFLAGS = "-O2 -fexceptions -pedantic -pthread -Wall -Wextra -Wpadded -fdump-rtl-expand",
+                 CCFLAGS="-std=c99 -O2 -fexceptions -pedantic -pthread -Wall -Wextra -Wpadded -fdump-rtl-expand",
                  LINKFLAGS="--as-needed")
     if matlab_is_32_bits:
         dirac.Append(CCFLAGS="-m32", LINKFLAGS="-m32")
@@ -42,7 +42,7 @@ elif platform == "win32":
     dirac_lib   = "DiracLE"
 elif platform == "darwin":
     dirac.Append(LIBPATH="Mac",
-                 CCFLAGS="-O2 -fexceptions -pedantic -pthread -Wall -Wextra -Wpadded",
+                 CCFLAGS="-std=c99 -O2 -fexceptions -pedantic -pthread -Wall -Wextra -Wpadded",
                  LINKFLAGS="--as-needed")
     dirac_lib   = "DiracLE"
 else:
@@ -55,21 +55,13 @@ dirac.Append(CPPPATH = "include",
 # clone environment from mDirac to mexversion
 mexversion = dirac.Clone()
 
-# look for libraries and corresponding headers and exit if they aren't found
-# (autoconf-like behaviour)
-if not (GetOption('clean') or GetOption('help')):
-    conf = dirac.Configure()
-    if not conf.CheckLibWithHeader(dirac_lib, 'Dirac.h', 'cpp'):
-        exit("You need to install Dirac!")
-    dirac = conf.Finish()
+# Dirac is bundled, so just add it
+dirac.Append(LIBS = common_libs + dirac_lib)
 
-dirac.Append(LIBS = common_libs)
-
-# manually set these settings after the configure checks (otherwise the Dirac
-# check will not work because it is a C++ library)
 if platform == 'posix':
-    # vecLib framework is needed on Mac OS X
-    dirac.Append(CFLAGS="--std=c99", FRAMEWORKS="vecLib")
+    # Dirac needs vecLib framework on Mac OS X
+    dirac.Append(FRAMEWORKS="vecLib")
+
 if GetOption('debug'):
     dirac.MergeFlags(["-g", "-O0"])
     msvs_variant = "Debug"
@@ -80,7 +72,7 @@ if platform != 'win32':
     dirac.SharedLibrary("mDirac", ["mDirac.c", mexversion_obj])
 else:
     # optionally create MS VS project, otherwise just compile
-    if make_msvc:
+    if make_msvs:
         dirac_vs = dirac.MSVSProject("mDirac"+dirac['MSVSPROJECTSUFFIX'],
                                      ["mDirac.c", "mDirac.def"])
         MSVSSolution("TimeStretchDirac", [dirac_vs], msvs_variant)
