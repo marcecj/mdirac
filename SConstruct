@@ -1,8 +1,8 @@
 # TODO: Test Mac and Windows.
 
 # some options, help text says all
-AddOption('--linux32', dest='linux32', action='store_true',
-          help='Force 32 bit compilation ("-m32" GCC option) on Linux.')
+AddOption('--32bits', dest='32bits', action='store_true',
+          help='Force 32 bit compilation ("-m32" GCC option) on Unix.')
 
 AddOption('--make-msvs', dest='msvs', action='store_true',
           help='Create a MSVS solution file under Windows.')
@@ -10,7 +10,7 @@ AddOption('--make-msvs', dest='msvs', action='store_true',
 AddOption('--debug-syms', dest='debug', action='store_true',
           help='Add debugging symbols')
 
-matlab_is_32_bits = GetOption('linux32')
+matlab_is_32_bits = GetOption('32bits')
 make_msvs         = GetOption('msvs')
 
 # the mex tool automatically sets various environment variables
