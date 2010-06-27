@@ -38,16 +38,17 @@ void initialise_state(DIRAC_STATE *state, int nrhs, const mxArray *prhs[])
 
     if( nrhs < 2 )
         state->fs = 44100.f;
-    else
-    {
+    else if( mxIsNumeric(prhs[1]) ) {
         state->fs = (float)*mxGetPr(prhs[1]);
         if( state->fs != 44100 && state->fs != 48000 )
             mexErrMsgTxt("Sampling rate must either be 44.1 or 48 kHz, you need to re-sample your data beforehand.");
     }
-
-    if( nrhs < 3 )
-        state->dirac_ts_factor = 1.15f;
     else
+        mexErrMsgTxt("fs must be a numeric data type.");
+
+    if( nrhs < 3 || mxIsEmpty(prhs[2]) )
+        state->dirac_ts_factor = 1.f;
+    else if( mxIsNumeric(prhs[2]) )
     {
         state->dirac_ts_factor = (float)*mxGetPr(prhs[2]);
         if( state->dirac_ts_factor < 0.5 ) {
@@ -59,10 +60,12 @@ void initialise_state(DIRAC_STATE *state, int nrhs, const mxArray *prhs[])
             state->dirac_ts_factor = 2.0;
         }
     }
-
-    if( nrhs < 4 )
-        state->dirac_qual = kDiracLambdaPreview; 
     else
+        mexErrMsgTxt("Time stretch factor must be a numeric data type.");
+
+    if( nrhs < 4 || mxIsEmpty(prhs[3]) )
+        state->dirac_qual = kDiracLambdaPreview; 
+    else if( mxIsNumeric(prhs[3]) )
     {
         switch( (int)mxGetScalar(prhs[3]) ) {
             case 0: state->dirac_mode = kDiracLambdaPreview; break;
@@ -71,30 +74,30 @@ void initialise_state(DIRAC_STATE *state, int nrhs, const mxArray *prhs[])
             case 3: state->dirac_mode = kDiracLambda3; break;
             case 4: state->dirac_mode = kDiracLambda4; break;
             case 5: state->dirac_mode = kDiracLambda5; break;
-        }
-        if( state->dirac_mode < kDiracLambdaPreview
-                || state->dirac_mode > kDiracLambda5 ) {
-            mexWarnMsgTxt("Bad Dirac mode: defaulting to mode 3.");
-            state->dirac_mode = kDiracLambda3;
+            default:
+                    mexWarnMsgTxt("Bad Dirac mode: defaulting to mode 3.");
+                    state->dirac_mode = kDiracLambda3;
         }
     }
-
-    if( nrhs < 5 )
-        state->dirac_qual = kDiracQualityPreview; 
     else
+        mexErrMsgTxt("Mode setting must be a numeric data type.");
+
+    if( nrhs < 5 || mxIsEmpty(prhs[4]) )
+        state->dirac_qual = kDiracQualityPreview; 
+    else if( mxIsNumeric(prhs[4]) )
     {
         switch( (int)mxGetScalar(prhs[4]) ) {
             case 0: state->dirac_qual = kDiracQualityPreview; break;
             case 1: state->dirac_qual = kDiracQualityGood; break;
             case 2: state->dirac_qual = kDiracQualityBetter; break;
             case 3: state->dirac_qual = kDiracQualityBest; break;
-        }
-        if( state->dirac_qual < kDiracQualityPreview
-                || state->dirac_qual > kDiracQualityBest ) {
-            mexWarnMsgTxt("Bad Dirac quality: defaulting to medium quality.");
-            state->dirac_qual = kDiracQualityGood;
+            default:
+                    mexWarnMsgTxt("Bad Dirac quality: defaulting to medium quality.");
+                    state->dirac_qual = kDiracQualityGood;
         }
     }
+    else
+        mexErrMsgTxt("Quality setting must be a numeric data type.");
 }
 
 long fill_buffer(float* data, long num_frames, void* dirac_state)
