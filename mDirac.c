@@ -34,7 +34,7 @@ void initialise_state(DIRAC_STATE *state, int nrhs, const mxArray *prhs[])
         state->input_num_channels = mxGetN(prhs[0]);
     }
     else
-        mexErrMsgTxt("Only double array are accepted as first argument.");
+        mexErrMsgTxt("Only double arrays are accepted as first argument.");
 
     if( nrhs < 2 )
         state->fs = 44100.f;
@@ -42,7 +42,7 @@ void initialise_state(DIRAC_STATE *state, int nrhs, const mxArray *prhs[])
     {
         state->fs = (float)*mxGetPr(prhs[1]);
         if( state->fs != 44100 && state->fs != 48000 )
-            mexErrMsgTxt("Sampling rate can either be 44.1 or 48 kHz, you need to re-sample your data beforehand.");
+            mexErrMsgTxt("Sampling rate must either be 44.1 or 48 kHz, you need to re-sample your data beforehand.");
     }
 
     if( nrhs < 3 )
@@ -164,7 +164,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
 
         /* create a new Dirac instance every channel, to prevent the necessity
          * of an arbitrary limit on the number of channels; the overhead
-         * shouldn't be too large for normal audio signals */
+         * doesn't seem to be too large for normal audio signals */
         dirac = DiracCreateInterleaved(dirac_state.dirac_mode,
                 dirac_state.dirac_qual, 1, dirac_state.fs,
                 &fill_buffer);
@@ -196,7 +196,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
         while( ret > 0 );
 
         DiracDestroy(dirac);
-        /* Set to NULL, otherwise dirac is destroyed twice */
+        /* Set to NULL, otherwise dirac could be destroyed twice */
         dirac = NULL; 
     }
 }
