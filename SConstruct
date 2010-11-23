@@ -16,6 +16,9 @@ make_msvs         = GetOption('msvs')
 # the mex_builder tool automatically sets various environment variables
 dirac        = Environment(tools = ['default', 'packaging', ('mex_builder', {'mex': True})])
 
+# print dirac['CC']
+# dirac.Replace(CC="clang")
+
 platform     = dirac['PLATFORM']
 msvs_variant = "Release"
 
@@ -23,8 +26,9 @@ msvs_variant = "Release"
 if platform == "posix":
     dirac.Append(LIBPATH="Linux",
                  CCFLAGS="-std=c99 -O2 -pedantic -Wall -Wextra -fdump-rtl-expand",
-                 LIBS=["m"],
-                 LINKFLAGS="--as-needed")
+                 LIBS=["m"])
+    if dirac['CC'] == 'gcc':
+        dirac.Append(LINKFLAGS="-Wl,--as-needed")
     if matlab_is_32_bits:
         dirac.Append(CCFLAGS="-m32", LINKFLAGS="-m32")
     dirac_lib   = "Dirac"
