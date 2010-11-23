@@ -2,19 +2,19 @@ function OutData = TimeStretchDirac(InData,fs,TimeStretchFactor, Mode, Quality)
 % A function to change duration of audio data without changing the pitch by
 % using the dirac library.
 %
-% Usage: OutData = TimeStretchDirac(InData,fs,TimeStretchFactor, Mode)
+% Usage: OutData = TimeStretchDirac(InData, fs, TimeStretchFactor, Mode)
 % Input parameters:
-%      InData:            could be a string describing a wave-File or a vector
+%      InData:            Can be a string describing a wave-File or a vector
 %                         containing Data (Len x Chns)
 %      fs:                sampling frequency: ignored if InData is a string
-%      TimeStretchFactor: the change factor range (0.5 ... 2) (0.5 means 2 times faster)
+%      TimeStretchFactor: the time stretch factor (0.5 ... 2) (0.5 means 2 times
+%                         faster)
 %      Mode:              the Dirac mode (precision definition between time and
 %                         frequency). Valid values are integers from 0
 %                         (Preview), 1 (highest time precision) to 5 (highest
 %                         frequency precision).
-%      Quality:           the Dirac mode (precision definition between time and
-%                         frequency). Valid values are between 0 (preview) and 4
-%                         (best quality).
+%      Quality:           the Dirac Quality setting. Valid values are between 0
+%                         (preview) and 4 (best quality).
 % Output parameters:
 %      OutData:           the new data vector (Len x Chns)
 %
