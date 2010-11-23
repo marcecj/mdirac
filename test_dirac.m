@@ -1,4 +1,4 @@
-% Simple script for testing mDirac/TimeStretchDirac
+% Simple script for testing mDirac and TimeStretchDirac
 
 clear;
 close all;
@@ -8,7 +8,7 @@ close all;
 %
 
 [input, fs] = wavread('test.wav');
-output      = mDirac(input,fs,1.5,3);
+output      = mDirac(input,fs,1.5,3,3);
 
 figure;
 subplot(2,1,1);
