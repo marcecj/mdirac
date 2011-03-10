@@ -1,4 +1,4 @@
-function OutData = mDirac(InData, fs, TimeStretchFactor, Mode, Quality)
+function OutData = mDirac(InData, fs, PitchShiftFactor, TimeStretchFactor, Mode, Quality)
 % A function to change duration of audio data without changing the pitch by
 % using the dirac library.
 %
@@ -6,7 +6,8 @@ function OutData = mDirac(InData, fs, TimeStretchFactor, Mode, Quality)
 % Input parameters:
 %      InData:            a vector containing data (Len x Chns)
 %      fs:                the sampling frequency
-%      TimeStretchFaktor: the change factor range (0.5 ... 2) (0.5 means 2 times faster)
+%      PitchShiftFactor:  the pitch shift factor (0.5 ... 2) (0.5 means 2 times faster)
+%      TimeStretchFactor: the time stretch factor (0.5 ... 2) (0.5 means 1 octave lower)
 %      Mode:              the Dirac mode (precision definition between time and
 %                         frequency). Valid values are integers from 0
 %                         (Preview), 1 (highest time precision) to 5 (highest

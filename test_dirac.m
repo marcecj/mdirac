@@ -8,7 +8,7 @@ close all;
 %
 
 [input, fs] = wavread('test.wav');
-output      = mDirac(input,fs,1.5,3,3);
+output      = mDirac(input,fs,1,1.5,3,3);
 
 figure;
 subplot(2,1,1);
@@ -32,8 +32,8 @@ t_in    = linspace(0,sig_len,fs);
 t_out   = linspace(0,ceil(sig_len*ts),ceil(fs*ts));
 sig     = sin(2*pi*100*t_in)';
 
-a = mDirac(sig,fs,ts,1,1);
-b = mDirac([sig sig sig],fs,ts,3,3);
+a = mDirac(sig,fs,1,ts,1,1);
+b = mDirac([sig sig sig],fs,1,ts,3,3);
 
 % plot input and output in seperate subplots
 figure;

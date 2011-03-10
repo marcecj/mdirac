@@ -63,8 +63,8 @@ end
 
 if need_to_resample
     InData  = resample(InData, 48000, fs);
-    OutData = mDirac(InData, 48000, TimeStretchFactor, Mode, Quality);
+    OutData = mDirac(InData, 48000, 1, TimeStretchFactor, Mode, Quality);
     OutData = resample(OutData, fs, 48000);
 else
-    OutData = mDirac(InData, fs, TimeStretchFactor, Mode, Quality);
+    OutData = mDirac(InData, fs, 1, TimeStretchFactor, Mode, Quality);
 end

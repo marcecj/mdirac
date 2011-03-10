@@ -6,6 +6,7 @@
 typedef struct {
     double*    dirac_input_data;
     float      dirac_ts_factor;     // time stretch factor
+    float      dirac_ps_factor;     // pitch shift factor
     int        dirac_mode;          // mode (lambda parameter)
     int        dirac_qual;          // quality
     int        dirac_cur_channel;  // one instance per channel
@@ -17,7 +18,7 @@ typedef struct {
 
 /* global variables, so that clear_memory() can reach them */
 void* dirac;
-    
+
 void initialise_state(DIRAC_STATE *state, int nrhs, const mxArray *prhs[])
 {
     /* initialise some variables */
@@ -25,7 +26,7 @@ void initialise_state(DIRAC_STATE *state, int nrhs, const mxArray *prhs[])
 
     if( nrhs < 1 )
         mexErrMsgTxt("Missing argument: you need to at least pass an array or a file name.");
-    
+
     if( mxIsEmpty(prhs[0]) )
         mexErrMsgTxt("Please no empty arrays!");
     else if( mxIsNumeric(prhs[0]) ) {
@@ -47,10 +48,26 @@ void initialise_state(DIRAC_STATE *state, int nrhs, const mxArray *prhs[])
         mexErrMsgTxt("fs must be a numeric data type.");
 
     if( nrhs < 3 || mxIsEmpty(prhs[2]) )
-        state->dirac_ts_factor = 1.f;
+        state->dirac_ps_factor = 1.f;
     else if( mxIsNumeric(prhs[2]) )
     {
-        state->dirac_ts_factor = (float)*mxGetPr(prhs[2]);
+        state->dirac_ps_factor = (float)*mxGetPr(prhs[2]);
+        if( state->dirac_ps_factor < 0.5 ) {
+            mexWarnMsgTxt("Pitch shift factor out of bounds, limiting to range [0.5;2.0].");
+            state->dirac_ps_factor = 0.5;
+        }
+        else if( state->dirac_ps_factor > 2.0 ) {
+            mexWarnMsgTxt("Pitch shift factor out of bounds, limiting to range [0.5;2.0].");
+            state->dirac_ps_factor = 2.0;
+        }
+    }
+    else
+        mexErrMsgTxt("Time stretch factor must be a numeric data type.");
+    if( nrhs < 4 || mxIsEmpty(prhs[3]) )
+        state->dirac_ts_factor = 1.f;
+    else if( mxIsNumeric(prhs[3]) )
+    {
+        state->dirac_ts_factor = (float)*mxGetPr(prhs[3]);
         if( state->dirac_ts_factor < 0.5 ) {
             mexWarnMsgTxt("Time stretch factor out of bounds, limiting to range [0.5;2.0].");
             state->dirac_ts_factor = 0.5;
@@ -63,11 +80,11 @@ void initialise_state(DIRAC_STATE *state, int nrhs, const mxArray *prhs[])
     else
         mexErrMsgTxt("Time stretch factor must be a numeric data type.");
 
-    if( nrhs < 4 || mxIsEmpty(prhs[3]) )
+    if( nrhs < 5 || mxIsEmpty(prhs[4]) )
         state->dirac_qual = kDiracLambdaPreview; 
-    else if( mxIsNumeric(prhs[3]) )
+    else if( mxIsNumeric(prhs[4]) )
     {
-        switch( (int)mxGetScalar(prhs[3]) ) {
+        switch( (int)mxGetScalar(prhs[4]) ) {
             case 0: state->dirac_mode = kDiracLambdaPreview; break;
             case 1: state->dirac_mode = kDiracLambda1; break;
             case 2: state->dirac_mode = kDiracLambda2; break;
@@ -82,11 +99,11 @@ void initialise_state(DIRAC_STATE *state, int nrhs, const mxArray *prhs[])
     else
         mexErrMsgTxt("Mode setting must be a numeric data type.");
 
-    if( nrhs < 5 || mxIsEmpty(prhs[4]) )
+    if( nrhs < 6 || mxIsEmpty(prhs[5]) )
         state->dirac_qual = kDiracQualityPreview; 
-    else if( mxIsNumeric(prhs[4]) )
+    else if( mxIsNumeric(prhs[5]) )
     {
-        switch( (int)mxGetScalar(prhs[4]) ) {
+        switch( (int)mxGetScalar(prhs[5]) ) {
             case 0: state->dirac_qual = kDiracQualityPreview; break;
             case 1: state->dirac_qual = kDiracQualityGood; break;
             case 2: state->dirac_qual = kDiracQualityBetter; break;
@@ -176,7 +193,7 @@ void mexFunction(int nlhs, mxArray *plhs[],
 
         /* set the stretch/shift factors */
         DiracSetProperty(kDiracPropertyTimeFactor, dirac_state.dirac_ts_factor, dirac);
-        DiracSetProperty(kDiracPropertyPitchFactor, 1.0, dirac);
+        DiracSetProperty(kDiracPropertyPitchFactor, dirac_state.dirac_ps_factor, dirac);
         DiracSetProperty(kDiracPropertyFormantFactor, 1.0, dirac);
 
         do {
