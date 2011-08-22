@@ -9,11 +9,12 @@ AddOption('--with-debug', dest='debug', action='store_true',
 
 matlab_is_32_bits = GetOption('32bits')
 
-# the mex_builder tool automatically sets various environment variables
-dirac        = Environment(tools = ['default', 'packaging', 'matlab'])
+env_vars = Variables()
+env_vars.Add('CC', 'The C compiler')
 
-# print dirac['CC']
-# dirac.Replace(CC="clang")
+# the mex_builder tool automatically sets various environment variables
+dirac = Environment(tools = ['default', 'packaging', 'matlab'],
+                    variables = env_vars)
 
 platform     = dirac['PLATFORM']
 
