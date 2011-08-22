@@ -14,7 +14,7 @@ matlab_is_32_bits = GetOption('32bits')
 make_msvs         = GetOption('msvs')
 
 # the mex_builder tool automatically sets various environment variables
-dirac        = Environment(tools = ['default', 'packaging', ('mex_builder', {'mex': True})])
+dirac        = Environment(tools = ['default', 'packaging', 'matlab'])
 
 # print dirac['CC']
 # dirac.Replace(CC="clang")
@@ -58,12 +58,9 @@ if GetOption('debug'):
     msvs_variant = "Debug"
 
 # add compile targets
-if platform != 'win32':
-    mDirac = dirac.MexExtension("mDirac", ["mDirac.c"])
-else:
+mDirac = dirac.Mex("mDirac", ["mDirac.c"])
+if platform == 'win32':
     # optionally create MS VS project, otherwise just compile
-    dirac.MexExtension("mDirac", ["mDirac.c", "mDirac.def"],
-                       only_deps=make_msvs)
     if make_msvs:
         dirac_vs = dirac.MSVSProject("mDirac"+dirac['MSVSPROJECTSUFFIX'],
                                      ["mDirac.c", "mDirac.def"])
