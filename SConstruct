@@ -4,14 +4,10 @@
 AddOption('--with-32bits', dest='32bits', action='store_true',
           help='Force 32 bit compilation ("-m32" GCC option) on Unix.')
 
-AddOption('--with-msvs', dest='msvs', action='store_true',
-          help='Create a MSVS solution file under Windows.')
-
 AddOption('--with-debug', dest='debug', action='store_true',
           help='Add debugging symbols')
 
 matlab_is_32_bits = GetOption('32bits')
-make_msvs         = GetOption('msvs')
 
 # the mex_builder tool automatically sets various environment variables
 dirac        = Environment(tools = ['default', 'packaging', 'matlab'])
@@ -20,7 +16,6 @@ dirac        = Environment(tools = ['default', 'packaging', 'matlab'])
 # dirac.Replace(CC="clang")
 
 platform     = dirac['PLATFORM']
-msvs_variant = "Release"
 
 # OS dependent stuff, we assume GCC on Unix like platforms
 if platform == "posix":
@@ -59,12 +54,12 @@ if GetOption('debug'):
 
 # add compile targets
 mDirac = dirac.Mex("mDirac", ["mDirac.c"])
+
+# optionally create MS VS project, otherwise just compile
 if platform == 'win32':
-    # optionally create MS VS project, otherwise just compile
-    if make_msvs:
-        dirac_vs = dirac.MSVSProject("mDirac"+dirac['MSVSPROJECTSUFFIX'],
-                                     ["mDirac.c", "mDirac.def"])
-        MSVSSolution("TimeStretchDirac", [dirac_vs], msvs_variant)
+    dirac_vs = dirac.MSVSProject("mDirac"+dirac['MSVSPROJECTSUFFIX'],
+                                 ["mDirac.c", "mDirac.def"])
+    Alias('vsproj', dirac_vs)
 
 # package the software
 dirac.Package(
