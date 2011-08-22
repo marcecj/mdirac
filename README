@@ -19,18 +19,12 @@ There are 2 ways to compile mDirac.  The easy way is to call the m-file
 'compile_timestretch.m' from Matlab.  There is also a more flexible build system
 based on SCons available, though it is perhaps overblown for a project of this
 size.  It has, however, proven that a proper and robust cross-platform build
-system for Mex extensions is possible.  There is also an obsolete CMake based
-build system, which is probably broken, as fixes to compilation errors were
-incorporated in the SConstruct file but not in the CMakeLists.txt file.  For
-details to all methods, see their relevant subsections.
+system for Mex extensions is possible.  For details to both methods, see their
+relevant subsections.
 
 A problem of all methods of compilation is that at least two things are not
 implemented.  For one thing: installing.  It is expected that you copy the
-resulting Mex binaries to wherever your Matlab installation looks for them.  The
-other problem is that on Windows with CMake, required DLLs are not copied into
-the Visual Studio build directory (though it is of course possible and probably
-easy).  This means you have to add an appropriate command to the VS project file
-or copy the DLLs yourself.
+resulting Mex binaries to wherever your Matlab installation looks for them.
 
 Prerequisites
 ~~~~~~~~~~~~~
@@ -46,12 +40,12 @@ and run a test script.
 Using the SCons based build system
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-The SCons based build system is a more robust alternative to the CMake based
-one.  It comes with an extension that properly presets a few environment
-variables, though it slows compilation down because it starts a Matlab
-subprocess to obtain them.  If you need to work on the Code and plan to compile
-often, you can use the interactive mode by passing the '--interactive' option to
-SCons, so that the command line would look like
+The SCons based build system is in general more robust and flexibel than just
+calling Mex, like in 'compile_timestretch.m'.  It comes with an extension that
+properly presets a few environment variables, though it slows compilation down
+because it starts a Matlab subprocess to obtain them.  If you need to work on
+the Code and plan to compile often, you can use the interactive mode by passing
+the '--interactive' option to SCons, so that the command line would look like
 
 --------------------------------------
 scons --interactive [options] [target]
@@ -82,45 +76,6 @@ Mac OS X
 
 Follow the same steps as under Linux, or look into integrating SCons into your
 IDE of choice (see http://www.scons.org/wiki/IDEIntegration[]).
-
-Using the CMake based build system (obsolete)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-The CMake based build system is obsoleted by both the SCons based build system
-and the 'compile_timestretch.m' script.  It is documented here for completeness.
-
-Linux
-^^^^^
-
-Just open a terminal and type
-
------------------
-    $ cmake .
------------------
-
-while in the source directory.  This will produce a Makefile that works as
-expected, save for the aforementioned caveats.  Alternatively, you can use the
-'cmake-gui' application (see the Windows subsection for a small introduction).
-
-Windows
-^^^^^^^
-
-Under Windows it is recommended to use the 'cmake-gui' application. Follow these steps:
-
-    1. Select the source and build directories (typically identical).
-    2. Click on 'Configure' to configure the build system.  Upon first use, you
-       will be prompted for the target, i.e. which IDE/compiler you use.
-    3. Click on 'Generate'.  This will, as the name implies, generates a project
-       file for your IDE of choice.
-
-You should now have an IDE project file in the source directory.  Open it and
-start compilation.
-
-Mac OS X
-^^^^^^^^
-
-On Mac OS X you can either follow the same steps as under Linux or under
-Windows according to your own preferences.
 
 Copyrights
 ----------
