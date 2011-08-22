@@ -1,0 +1,3 @@
+[submodule "site_scons/site_tools/matlab"]
+	path = site_scons/site_tools/matlab
+	url = git://git.code.sf.net/p/sconsmatlabtool/code
