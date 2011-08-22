@@ -1,0 +1,18 @@
+*~
+*.[ao]
+*.os
+*.expand
+
+# vim files
+*.swp
+
+# scons files
+.scon*
+.matlab_vars_cache
+
+# misc files
+*.mex*
+
+# package files
+TimeStretchDirac-*/
+*.zip
