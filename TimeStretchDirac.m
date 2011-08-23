@@ -32,7 +32,7 @@ if nargin < 1
     error('We need at least one input argument!');
 end
 
-if nargin < 2
+if nargin < 2 && isfloat(InData)
     disp('Sampling rate not given! Defaulting to 44.1 kHz');
     fs = 44100;
 elseif (fs ~= 44100 && fs ~= 48000) && isfloat(InData)
