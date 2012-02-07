@@ -35,11 +35,6 @@ end
 if nargin < 2 && isfloat(InData)
     disp('Sampling rate not given! Defaulting to 44.1 kHz');
     fs = 44100;
-elseif (fs ~= 44100 && fs ~= 48000) && isfloat(InData)
-    disp(['Sampling rate not compatible with Dirac! You''re data will' ...
-    'automatically be resampled to 48 kHz before and back to ' num2str(fs) ...
-    ' after stretching.']);
-    need_to_resample = true;
 end
 
 if nargin < 3
@@ -59,6 +54,13 @@ end
 
 if ischar(InData)
     [InData, fs] = wavread(InData);
+end
+
+if fs ~= 44100 && fs ~= 48000
+    disp(['Sampling rate not compatible with Dirac! You''re data will' ...
+    'automatically be resampled to 48 kHz before and back to ' num2str(fs) ...
+    ' after stretching.']);
+    need_to_resample = true;
 end
 
 if need_to_resample
