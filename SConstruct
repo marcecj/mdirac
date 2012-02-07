@@ -1,4 +1,3 @@
-# TODO: Test Mac and Windows.
 import platform
 
 # some options, help text says all
