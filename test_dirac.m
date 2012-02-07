@@ -8,7 +8,8 @@ close all;
 %
 
 [input, fs] = wavread('test.wav');
-output = mDirac(input,fs,1.5,3);
+output = mDirac(input,44100,1.5,3);
+% output = mDirac(input,fs,1.5,3);
 
 figure;
 subplot(2,1,1);
@@ -21,8 +22,8 @@ hold on;
 plot(input(:,2));
 
 %
-% test 2: sinusoids (to test if multichannel stretching works correctly or if
-% the channels get mixed up)
+% test 2: sinusoids (to test if the interleaved array indices get calculated
+% correctly for multichannel stretching)
 %
 
 fs = 44100;
@@ -32,8 +33,6 @@ t_in = linspace(0,sig_len,fs);
 t_out = linspace(0,ceil(sig_len*ts),ceil(fs*ts));
 sig = sin(2*pi*100*t_in)';
 
-% a = TimeStretchDirac(sig,fs,1.15,1);
-% b = TimeStretchDirac([sig;sig;sig]);
 a = mDirac(sig,fs,ts,1);
 b = mDirac([sig sig sig],fs,ts,3);
 
@@ -46,11 +45,39 @@ subplot(2,1,2);
 plot(t_out,a);
 set(gca,'XLim',[0 t_out(end)]);
 
-% plot differences between channels (should all be zero)
+% plot differences between channels (should all be zero!)
 figure;
 subplot(3,1,1);
-plot(b(:,1)-b(:,3));
+plot(b(:,1)-b(:,2));
 subplot(3,1,2);
 plot(b(:,2)-b(:,3));
 subplot(3,1,3);
-plot(b(:,3)-b(:,2));
+plot(b(:,3)-b(:,1));
+
+%
+% test 3: test TimeStretchDirac wrapper m-File
+%
+
+output2 = TimeStretchDirac(input,fs,1.5,3);
+
+figure;
+subplot(2,1,1);
+plot(output2(:,1),'r');
+hold on;
+plot(input(:,1));
+subplot(2,1,2);
+plot(output2(:,2),'r');
+hold on;
+plot(input(:,2));
+
+output3 = TimeStretchDirac('test.wav',fs,1.5,3);
+
+figure;
+subplot(2,1,1);
+plot(output3(:,1),'r');
+hold on;
+plot(input(:,1));
+subplot(2,1,2);
+plot(output3(:,2),'r');
+hold on;
+plot(input(:,2));
