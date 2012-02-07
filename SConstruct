@@ -18,7 +18,7 @@ cur_platform = dirac['PLATFORM']
 if cur_platform == "posix":
 
     dirac.Append(LIBPATH="Linux",
-                 CCFLAGS="-std=c99 -O2 -pedantic -Wall -Wextra -fdump-rtl-expand",
+                 CCFLAGS="-std=c99 -O2 -pedantic -Wall -Wextra",
                  LIBS=["m"])
 
     if dirac['CC'] == 'gcc':
