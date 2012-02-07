@@ -16,10 +16,10 @@ env_vars.Add('CC', 'The C compiler')
 dirac = Environment(tools = ['default', 'packaging', 'matlab'],
                     variables = env_vars)
 
-platform     = dirac['PLATFORM']
+cur_platform = dirac['PLATFORM']
 
 # OS dependent stuff, we assume GCC on Unix like platforms
-if platform == "posix":
+if cur_platform == "posix":
     dirac.Append(LIBPATH="Linux",
                  CCFLAGS="-std=c99 -O2 -pedantic -Wall -Wextra -fdump-rtl-expand",
                  LIBS=["m"])
@@ -28,10 +28,10 @@ if platform == "posix":
     if matlab_is_32_bits:
         dirac.Append(CCFLAGS="-m32", LINKFLAGS="-m32")
     dirac_lib   = "Dirac"
-elif platform == "win32":
+elif cur_platform == "win32":
     dirac.Append(LIBPATH="Win")
     dirac_lib   = "DiracLE"
-elif platform == "darwin":
+elif cur_platform == "darwin":
     dirac.Append(LIBPATH="Mac",
                  CCFLAGS="-std=c99 -O2 -pedantic -Wall -Wextra",
                  LIBS=["m"])
@@ -45,7 +45,7 @@ dirac.Append(CPPPATH = "include")
 # Dirac is bundled, so just add it
 dirac.Append(LIBS=dirac_lib)
 
-if platform == 'posix':
+if cur_platform == 'posix':
     # Dirac needs vecLib framework on Mac OS X
     dirac.Append(FRAMEWORKS="vecLib")
 
@@ -57,7 +57,7 @@ if GetOption('debug'):
 mDirac = dirac.Mex("mDirac", ["mDirac.c"])
 
 # optionally create MS VS project, otherwise just compile
-if platform == 'win32':
+if cur_platform == 'win32':
     dirac_vs = dirac.MSVSProject("mDirac"+dirac['MSVSPROJECTSUFFIX'],
                                  ["mDirac.c", "mDirac.def"])
     Alias('vsproj', dirac_vs)
