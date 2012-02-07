@@ -25,3 +25,42 @@ function OutData = TimeStretchDirac(InData,fs,TimeStretchFaktor, Mode)
 % Mehrkanalige Daten in Einzelkanäle aufspalten.
 % und natürlich die Dirac Bibliothek ansprechen
 
+need_to_resample = 0;
+
+if nargin < 1
+    error('We need at least one input!');
+end
+
+if nargin < 2
+    disp('Sampling rate not given! Defaulting to 44.1 kHz');
+    fs = 44100;
+elseif (fs ~= 44100 && fs ~= 48000) && isfloat(InData)
+    disp('Sampling rate not compatible with Dirac! You''re data will automatically be resampled before and after stretching.');
+    need_to_resample = 1;
+end
+
+if nargin < 3
+    disp('Time stretch factor not given, defaulting to 1.15.');
+    TimeStretchFaktor = 1.15;
+end
+
+if nargin < 4
+    disp('Dirac Mode not given, defaulting to ''Preview''.');
+    Mode = 0;
+end
+
+if ischar(InData)
+    % [InData, fs] = wavread(InData);
+    [InData] = wavread(InData);
+    fs = 44100; % hack for testing under Gentoo
+end
+
+if need_to_resample
+    InData = resample(InData, 48000, fs);
+end
+
+OutData = mDirac(InData, fs, TimeStretchFaktor, Mode);
+
+if need_to_resample
+    OutData = resample(OutData, fs, 48000);
+end
