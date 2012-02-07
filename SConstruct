@@ -1,13 +1,9 @@
 # TODO: Test Mac and Windows.
+import platform
 
 # some options, help text says all
-AddOption('--with-32bits', dest='32bits', action='store_true',
-          help='Force 32 bit compilation ("-m32" GCC option) on Unix.')
-
 AddOption('--with-debug', dest='debug', action='store_true',
           help='Add debugging symbols')
-
-matlab_is_32_bits = GetOption('32bits')
 
 env_vars = Variables()
 env_vars.Add('CC', 'The C compiler')
@@ -25,7 +21,11 @@ if cur_platform == "posix":
                  LIBS=["m"])
     if dirac['CC'] == 'gcc':
         dirac.Append(LINKFLAGS="-Wl,--as-needed")
-    if matlab_is_32_bits:
+    # if the system is 64 bit and Matlab is 32 bit, compile for 32 bit; since
+    # Matlab currently only runs on x86 architectures, checking for x86_64
+    # should suffice
+    if platform.machine() == "x86_64" \
+       and not dirac['MATLAB']['ARCH'].endswith('64'):
         dirac.Append(CCFLAGS="-m32", LINKFLAGS="-m32")
     dirac_lib   = "Dirac"
 elif cur_platform == "win32":
