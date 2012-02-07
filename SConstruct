@@ -108,7 +108,7 @@ mDirac_pkg = env.Package(
 # create an alias for building the documentation, but only if the asciidoc
 # binary could be found
 if env.WhereIs('asciidoc') is not None:
-    docs = env.AsciiDoc(['README', 'LICENSE'])
+    docs = env.AsciiDoc(['README', 'INSTALL', 'LICENSE'])
 
     Alias('doc', docs)
 

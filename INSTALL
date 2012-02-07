@@ -1,0 +1,116 @@
+Installing mDirac
+=================
+
+There are two ways to compile mDirac.  The easy way is to call the m-file
+`compile_timestretch.m` from Matlab.  There is also a more flexible build system
+based on SCons available, that can also a Visual Studio project.  For details on
+both methods, see their relevant subsections.
+
+Prerequisites
+-------------
+
+The only strict dependency of mDirac is:
+
+- Matlab (tested with 2010a Student Edition)
+
+The DiracLE library is bundled, so you don't need to obtain it separately.  If
+you are going to use the SCons based build system, you will also need
+
+- http://www.python.org[Python] (whatever version SCons works with)
+- http://scons.org[SCons] (tested with SCons 2.x)
+- http://starship.python.net/crew/mhammond/win32/Downloads.html[Python Win32
+  extensions] (optional, but necessary for some SCons features on Windows)
+- the http://sconsmatlabtool.sf.net[Matlab SCons Tool]
+
+The Matlab Tool is a submodule of this repository.  To install it, just run
+
+-----------------------------
+$ git submodule update --init
+-----------------------------
+
+If you want to build the documentation, you need to install
+http://www.methods.co.nz/asciidoc/[AsciiDoc].
+
+NOTE: I have never compiled mDirac under Mac OS X, if anybody succeeds in doing
+so before I get around to it, I would like to know if it works.  I already test
+compile with clang, so there *should* be no issues.
+
+Using the compile_timestretch.m script
+--------------------------------------
+
+In Matlab, type `compile_timestretch` to compile the Mex extension.
+
+Using the SCons based build system
+----------------------------------
+
+The SCons based build system is in general more robust and flexibel than calling
+Mex in compile_timestretch.m.  It uses an extension that properly presets a few
+environment variables, though it slows compilation down the first time it is run
+because it starts a Matlab subprocess to obtain them.
+
+Anyway, to use SCons, call it from the command line like so:
+
+--------------------------------------
+$ scons [--interactive] [options] [target]
+--------------------------------------
+
+As to why I wrote a complicated SCons build system in the first place, well...
+Apart from the usual features of real build systems (proper dependency tracking,
+parallel builds, etc.) it can do the following things:
+
+- create a Visual Studio solution file with Release and Debug Variants
+- create a ZIP file for distribution
+- separates release from debug builds
+- *could* support cross-compiling to other architectures/operating systems to
+  provide binaries for them
+- builds the http://www.methods.co.nz/asciidoc/[AsciiDoc] documentation you are
+  currently reading
+- supports whatever compilers SCons (or third party extensions) supports, and
+  not just what The Mathworks supports, which is incomplete and quite outdated
+  anyway footnote:[Fun fact: the most recent minor version of GCC officially
+  supported by The Mathworks for Matlab 2011a (GCC 4.3) is not even supported by
+  the _compiler vendor_ anymore, though I admit this may be deliberate.].
+
+For more information (such as available build targets and options), see the
+output of `scons --help`.
+
+If you need to work on the Code and plan to compile often, you can speed up the
+process in general by using the interactive mode by passing the `--interactive`
+option to SCons.  You can also override certain environment variables.
+
+NOTE: To debug from within Visual Studio, you need to configure the project to
+call MATLAB with the "-wait" argument.  I could not find a way to do this
+automatically with SCons.
+
+Linux
+~~~~~
+
+Just open a terminal and type
+
+-----------------
+    $ scons
+-----------------
+
+while in the source directory.
+
+Windows
+~~~~~~~
+
+You should make sure scons is in your PATH.  If not, edit it accordingly.  Then
+you can call scons from within a terminal in the project directory.
+
+Under Windows, the build system has an additional `vsproj` target.  This creates
+a MS Visual Studio Solution file with mDirac as a project.  For other IDEs,
+see http://www.scons.org/wiki/IDEIntegration[].
+
+Mac OS X
+~~~~~~~~
+
+Follow the same steps as under Linux, or look into integrating SCons into your
+IDE of choice (see http://www.scons.org/wiki/IDEIntegration[]).
+
+Testing
+-------
+
+To run the test scripts, call `test_dirac.m` from MATLAB.  This will test
+`mDirac` and `TimeStretchDirac`.

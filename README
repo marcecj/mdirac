@@ -2,85 +2,46 @@ The mDirac Mex extension
 ========================
 Marc Joliet <marcec@gmx.de>
 
+mDirac is a mex wrapper for the time-stretching/pitch-shifting C++ library
+DiracLE (version 2), written by Stephan Bernsee of
+http://www.dspdimension.com[DSP Dimension].
+
 Introduction
 ------------
 
-This document explains how to compile mDirac.
+mDirac is a simple Mex wrapper for the time-stretching/pitch-shifting library
+DiracLE (version 2).  It works with Matlab arrays of arbitrary MxN dimension, M
+being the number of samples per channel and N being the number of channels, as
+returned by, e.g., 'wavread()'.
 
-mDirac is a mex wrapper for the time-stretching/pitch-shifting C++ library
-Dirac, written by Stephan Bernsee of http://www.dspdimension.com[].  It works
-with Matlab arrays of arbitrary MxN dimension, M being the number of samples per
-channel and N being the number of channels, as returned by, e.g., 'wavread()'.
+This Mex file started out as part of a university assignment, but I considered
+it useful enough to warrant a release on its own.
 
-Compiling
----------
+Features
+--------
 
-There are 2 ways to compile mDirac.  The easy way is to call the m-file
-'compile_timestretch.m' from Matlab.  There is also a more flexible build system
-based on SCons available, though it is perhaps overblown for a project of this
-size.  It has, however, proven that a proper and robust cross-platform build
-system for Mex extensions is possible.  For details to both methods, see their
-relevant subsections.
+mDirac supports all parameters of DiracLE 2.  It should be considered feature
+complete in the sense that all features of DiracLE are wrapped by the mDirac Mex
+file.
 
-A problem of all methods of compilation is that at least two things are not
-implemented.  For one thing: installing.  It is expected that you copy the
-resulting Mex binaries to wherever your Matlab installation looks for them.
+Apart from that, there is also a special function intended solely for time-stretching,
+"TimeStretchDirac", that takes care of some of the specifics of DiracLE (e.g.,
+automatically resampling to sampling rates that are supported by Dirac).  Its
+existence is due to a requirement of the university assignment that this project
+came from.
 
-Prerequisites
-~~~~~~~~~~~~~
+Installation
+------------
 
-mDirac has no external dependencies as the DiracLE library is bundled.
-
-Using the compile_timestretch.m script (all platforms)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-In Matlab, type 'compile_timestretch'.  This will compile both Mex extensions
-and run a test script.
-
-Using the SCons based build system
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-The SCons based build system is in general more robust and flexibel than just
-calling Mex, like in 'compile_timestretch.m'.  It comes with an extension that
-properly presets a few environment variables, though it slows compilation down
-because it starts a Matlab subprocess to obtain them.  If you need to work on
-the Code and plan to compile often, you can use the interactive mode by passing
-the '--interactive' option to SCons, so that the command line would look like
-
---------------------------------------
-scons --interactive [options] [target]
---------------------------------------
-
-Linux
-^^^^^
-
-Just open a terminal and type
-
------------------
-    $ scons
------------------
-
-while in the source directory.  Users with 32 bit Matlab on 64 bit systems
-should pass the --linux32 option to enforce 32 bit compilation.
-
-Windows
-^^^^^^^
-
-If SCons is in your PATH, you can open a console and follow the steps under
-Linux.  The '--make-msvs' option creates a MS VisualStudio Solution file with
-mDirac as a project.  For other IDEs, see
-http://www.scons.org/wiki/IDEIntegration[].
-
-Mac OS X
-^^^^^^^^
-
-Follow the same steps as under Linux, or look into integrating SCons into your
-IDE of choice (see http://www.scons.org/wiki/IDEIntegration[]).
+See the file file://./INSTALL.html[INSTALL].
 
 Copyrights
 ----------
 
-For the copyrights to mDirac and the SCons Matlab tool, see the file LICENSE.
+For the copyrights to mDirac, see the file file://./LICENSE.html[LICENSE].
+
+The accompanying Dirac libraries and header, as well as the test files, are
+subject to the following copyright:
 
 DIRAC Time Stretch/Pitch Shift technology (c) 2005-2009 Stephan M. Bernsee,
 http://www.dspdimension.com[].
