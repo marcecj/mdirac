@@ -70,8 +70,9 @@ elseif(UNIX)
 
     message("Configuring for Unix (Linux)")
 
-    # enforce 32 bit compilation; add "exceptions" option, without which certain
-    # mex functions cause matlab to crash
+    # enforce 32 bit compilation; add "exceptions" option, without which any mex
+    # function that raises an exception (e.g. mexErrMsgTxt()) causes matlab to
+    # crash
     set(CMAKE_C_FLAGS
         "${CMAKE_C_FLAGS} -m32 -fexceptions")
     message("Compiler flags:\t${CMAKE_C_FLAGS}")
@@ -87,7 +88,7 @@ elseif(UNIX)
 
     # additional CFLAGS; "-dr" dumps GCCs internal code representation (for a
     # call graph utility)
-    set(EXTRA_CFLAGS "-ansi -Wall -Wextra -Wpadded -dr")
+    set(EXTRA_CFLAGS "-std=c99 -Wall -Wextra -Wpadded -dr")
     # here we need to link to libm
     set(ADDITIONAL_LIBS "m")
 
