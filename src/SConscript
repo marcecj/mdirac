@@ -1,0 +1,19 @@
+# vim:ft=python
+import os
+
+Import("env", "do_debug")
+
+if do_debug:
+    env = env.Clone()
+
+    if env['PLATFORM'] == "win32" and 'mingw' not in env['TOOLS']:
+        env.AppendUnique(CCFLAGS='/Zi', LINKFLAGS='/DEBUG')
+    else:
+        env.MergeFlags("-g -O0")
+
+# add compile targets
+mDirac = env.Mex("mDirac.c")
+
+mfiles = env.Glob('*.m', source=False)
+
+Return("mDirac", "mfiles")

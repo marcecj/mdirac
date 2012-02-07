@@ -14,5 +14,9 @@
 *.mex*
 
 # package files
-TimeStretchDirac-*/
+mDirac-*/
+mDirac/
 *.zip
+
+# doc files
+*.html

@@ -3,6 +3,8 @@
 clear;
 close all;
 
+addpath('mDirac');
+
 %
 % test 1: audio file (2 channels, 44100 Hz)
 %
