@@ -55,7 +55,7 @@ dirac.Append(CPPPATH="include")
 # Dirac is bundled, so just add it
 dirac.Append(LIBS=dirac_lib)
 
-if cur_platform == 'posix':
+if cur_platform == 'darwin':
     # Dirac needs vecLib framework on Mac OS X
     dirac.Append(FRAMEWORKS="vecLib")
 
